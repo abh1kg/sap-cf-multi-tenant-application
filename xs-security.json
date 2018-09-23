@@ -8,5 +8,25 @@
 		"grant-as-authority-to-apps": [
 			"$XSAPPNAME(application,sap-provisioning,tenant-onboarding)"
 		]
+	}, {
+		"name": "$XSAPPNAME.Viewer",
+		"description": "Viewer Scope for read-only operations on products"
+	}, {
+		"name": "$XSAPPNAME.Modify",
+		"description": "Update Scope for management of products"
+	}],
+	"role-templates": [{
+		"name": "product_viewer",
+		"description": "Role for read-only operations on products",
+		"scope-references": [
+			"$XSAPPNAME.Viewer"
+		]
+	}, {
+		"name": "product_update",
+		"description": "Role for management of products",
+		"scope-references": [
+			"$XSAPPNAME.Modify",
+			"$XSAPPNAME.Viewer"
+		]
 	}]
 }
