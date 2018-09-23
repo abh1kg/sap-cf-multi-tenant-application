@@ -1,6 +1,7 @@
 _schema-version: '2.0'
 ID: com.sap.cf.provider
 version: 1.0.0
+description: Multi-Tenant Provider Application on SAP Cloud Platform Cloud Foundry Environment
 modules:
   - name: industry-management-core-db
     type: hdb
@@ -55,4 +56,5 @@ resources:
     type: com.sap.xs.uaa
   - name: tenant_master
     type: com.sap.xs.hdi-container
-description: Multi-Tenant Provider Application on SAP Cloud Platform Cloud Foundry Environment
+    parameters:
+      path: ./database-parameters.json
