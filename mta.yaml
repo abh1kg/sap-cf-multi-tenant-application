@@ -1,13 +1,13 @@
 _schema-version: '2.0'
-ID: com.accenture.newspage
+ID: com.sap.cf.provider
 version: 1.0.0
-
 modules:
   - name: industry-management-core-db
     type: hdb
     path: industry-management-core-db
     requires:
-     - name: tenant_master
+      - name: tenant_master
+    description: HDB Database Application for deploying tenant master objects
   - name: industry-management-ui
     type: html5
     path: industry-management-ui
@@ -25,8 +25,8 @@ modules:
           url: '${url}'
           forwardAuthToken: true
     properties:
-      TENANT_HOST_PATTERN: "^(.*)-<Your back-end app URL without the protocol>"
-      
+      TENANT_HOST_PATTERN: '^(.*)-<Your back-end app URL without the protocol>'
+    description: UI Application catering to multiple consumers
   - name: industry-management-backend
     type: nodejs
     path: industry-management-backend
@@ -44,15 +44,15 @@ modules:
       SPACE_DEVELOPER_USER: userName
       SPACE_DEVELOPER_PASSWORD: password
       SAP_JWT_TRUST_ACL:
-       - clientid: "*"
-         identityzone: "*"
-           
+        - clientid: '*'
+          identityzone: '*'
+    description: Service Provider Backend application with authorization support
 resources:
   - name: uaa_industrymanagement
     parameters:
       path: ./xs-security.json
       service-plan: application
     type: com.sap.xs.uaa
-
   - name: tenant_master
     type: com.sap.xs.hdi-container
+description: Multi-Tenant Provider Application on SAP Cloud Platform Cloud Foundry Environment
