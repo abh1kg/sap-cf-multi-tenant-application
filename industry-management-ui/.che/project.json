@@ -1,1 +1,1 @@
-{"type":"com.sap.hcp.html5","builders":{"default":"grunt-builder-cf","configs":{}},"runners":{"configs":{}},"attributes":{},"description":"","mixinTypes":["mtamodule"]}
+{"type":"com.sap.hcp.html5","builders":{"default":"grunt-builder-cf","configs":{}},"runners":{"configs":{}},"attributes":{"sap.watt.common.setting":["{\"layout\":{\"snapshot\":{\"viewport\":{\"x\":-522,\"y\":-316.5,\"scale\":1},\"collapsedPorts\":[],\"expandedShapes\":[],\"selection\":[],\"focus\":\"\"}}}"]},"description":"","mixinTypes":["mtamodule"]}
