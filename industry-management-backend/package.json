@@ -1,0 +1,33 @@
+{
+  "name": "industrymanagementbackend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node ./bin/start"
+  },
+  "dependencies": {
+    "@sap/hana-client": "~2.3",
+    "@sap/hdbext": "^4.7.2",
+    "@sap/hdi-deploy": "^3.7.0",
+    "@sap/xsenv": "*",
+    "@sap/xssec": "^2.1.14",
+    "basic-auth": "1.0.4",
+    "bluebird": "3.4.6",
+    "body-parser": "1.15.2",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.16.0",
+    "express-rate-limit": "^2.12.2",
+    "hdb": "*",
+    "http-errors": "1.7.0",
+    "is-html": "^1.1.0",
+    "jade": "~1.11.0",
+    "lodash": "4.13.1",
+    "passport": "^0.4.0",
+    "request": "2.69.0",
+    "uuid": "*",
+    "winston": "2.2.0"
+  },
+  "engines": {
+    "node": "8.x"
+  }
+}

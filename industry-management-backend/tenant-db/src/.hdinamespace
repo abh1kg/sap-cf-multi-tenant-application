@@ -1,0 +1,5 @@
+{
+    "name":    "business",
+    "cascade":  false,
+    "subfolder": "append"
+}

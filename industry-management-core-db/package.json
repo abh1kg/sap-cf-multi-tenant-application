@@ -1,0 +1,10 @@
+{
+    "name": "industry-management-core-db",
+    "version": "1.0.0",
+    "dependencies": {
+        "@sap/hdi-deploy": "latest"
+    },
+    "scripts": {
+        "start": "node node_modules/@sap/hdi-deploy/deploy.js"
+    }
+}

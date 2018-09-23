@@ -1,0 +1,58 @@
+_schema-version: '2.0'
+ID: com.accenture.newspage
+version: 1.0.0
+
+modules:
+  - name: industry-management-core-db
+    type: hdb
+    path: industry-management-core-db
+    requires:
+     - name: tenant_master
+  - name: industry-management-ui
+    type: html5
+    path: industry-management-ui
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    build-parameters:
+      builder: grunt
+    requires:
+      - name: uaa_industrymanagement
+      - name: industrymanagementbackend_api
+        group: destinations
+        properties:
+          name: industrymanagementbackend_api
+          url: '${url}'
+          forwardAuthToken: true
+    properties:
+      TENANT_HOST_PATTERN: "^(.*)-<Your back-end app URL without the protocol>"
+      
+  - name: industry-management-backend
+    type: nodejs
+    path: industry-management-backend
+    provides:
+      - name: industrymanagementbackend_api
+        properties:
+          url: '${default-url}'
+    requires:
+      - name: uaa_industrymanagement
+      - name: tenant_master
+    properties:
+      HANA_DBAAS_INSTANCE_ID: id-of-instance
+      HANA_DBAAS_INSTANCE: manjudbaas
+      XSUAA_INSTANCE: uaa_industrymanagement
+      SPACE_DEVELOPER_USER: userName
+      SPACE_DEVELOPER_PASSWORD: password
+      SAP_JWT_TRUST_ACL:
+       - clientid: "*"
+         identityzone: "*"
+           
+resources:
+  - name: uaa_industrymanagement
+    parameters:
+      path: ./xs-security.json
+      service-plan: application
+    type: com.sap.xs.uaa
+
+  - name: tenant_master
+    type: com.sap.xs.hdi-container

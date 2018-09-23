@@ -1,0 +1,9 @@
+{
+    "appId": "multitenantindustry",
+    "displayName": "Industry Management Service",
+    "description": "An application service to manage your product catalog",
+    "category": "Sample Provider",
+    "appUrls": {
+        "onSubscription": "https://industry-management-backend.cfapps.eu10.hana.ondemand.com/callback/v1.0/tenants/{tenantId}"
+    }
+}
