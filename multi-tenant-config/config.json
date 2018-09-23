@@ -4,6 +4,6 @@
     "description": "An application service to manage your product catalog",
     "category": "Sample Provider",
     "appUrls": {
-        "onSubscription": "https://industry-management-backend.cfapps.eu10.hana.ondemand.com/callback/v1.0/tenants/{tenantId}"
+        "onSubscription": "https://industry-management-backend.<cf-application-domain>/callback/v1.0/tenants/{tenantId}"
     }
 }

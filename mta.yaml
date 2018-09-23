@@ -26,7 +26,7 @@ modules:
           url: '${url}'
           forwardAuthToken: true
     properties:
-      TENANT_HOST_PATTERN: '^(.*)-<Your back-end app URL without the protocol>'
+      TENANT_HOST_PATTERN: '^(.*)-<backend-app-url-without-protocol>'
     description: UI Application catering to multiple consumers
   - name: industry-management-backend
     type: nodejs
@@ -35,15 +35,16 @@ modules:
       - name: industrymanagementbackend_api
         properties:
           url: '${default-url}'
+          uri: '${default-uri}'
     requires:
       - name: uaa_industrymanagement
       - name: tenant_master
     properties:
-      HANA_DBAAS_INSTANCE_ID: id-of-instance
-      HANA_DBAAS_INSTANCE: manjudbaas
+      HANA_DBAAS_INSTANCE_ID: <service_instance_id_for_hana_dbaas>
+      HANA_DBAAS_INSTANCE: tenant_master
       XSUAA_INSTANCE: uaa_industrymanagement
-      SPACE_DEVELOPER_USER: userName
-      SPACE_DEVELOPER_PASSWORD: password
+      SPACE_DEVELOPER_USER: <email_id_for_space_developer_user>
+      SPACE_DEVELOPER_PASSWORD: <password_for_space_developer_user>
       SAP_JWT_TRUST_ACL:
         - clientid: '*'
           identityzone: '*'
