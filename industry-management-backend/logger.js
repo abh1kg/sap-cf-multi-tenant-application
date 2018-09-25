@@ -6,7 +6,7 @@ const winston = require('winston');
 const transports = [
     new winston.transports.Console({
         level: process.env.LOG_LEVEL || 'debug',
-        silent: _.includes(['production', 'test'], process.env.NODE_ENV),
+        silent: _.includes(['test'], process.env.NODE_ENV),
         prettyPrint: true,
         colorize: true,
         timestamp: true

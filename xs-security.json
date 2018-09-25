@@ -1,5 +1,5 @@
 {
-	"xsappname": "multitenantindustry",
+	"xsappname": "industrymanagementapp",
 	"tenant-mode": "shared",
 	"description": "Security profile of Multi-Tenant Industry Application",
 	"scopes": [{

@@ -5,6 +5,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const RetryOperation = require('../utils/retry');
 const Continue = require('../models/errors/ContinueWithNext');
+const applicationId = JSON.parse(process.env.VCAP_APPLICATION).application_id;
 
 class CloudControllerClient extends HttpClient {
     constructor(uaa) {
@@ -119,13 +120,7 @@ class CloudControllerClient extends HttpClient {
 
     getTenantCredentials(tenantId, keyId) {
         return this.getServiceKey(keyId)
-            .then(res => res.entity.credentials)
-            .then(credentials => {
-                return {
-                    tenantId: tenantId,
-                    credentials: credentials
-                };
-            });
+            .then(res => res.entity.credentials);
     }
 
     getServiceKey(keyId) {
@@ -164,7 +159,7 @@ class CloudControllerClient extends HttpClient {
     }
 
     createServiceInstanceForTenant(tenantId) {
-        const instanceName = `tenant-${tenantId}`;
+        const instanceName = `tenant-${applicationId}-${tenantId}`;
 
         return Promise.try(() => {
                 return this.getServiceId('hana');

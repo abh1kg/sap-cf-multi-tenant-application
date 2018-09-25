@@ -18,12 +18,12 @@ const hanaConfig = boundServices[process.env.HANA_DBAAS_INSTANCE].credentials;
 
 function getVcapServices(credentials) {
     return {
-        "VCAP_SERVICES": {
+        "VCAP_SERVICES": JSON.stringify({
             "hana": [{
                 "credentials": credentials,
                 "tags": ['hana']
             }]
-        }
+        })
     };
 }
 
@@ -49,17 +49,17 @@ class TenantLifecycleManager {
     }
 
     getCredentialsForTenant(tenantId) {
-        return Promise.try(() => {
-            if (_.has(this.tenants, tenantId)) {
-                return _.get(this.tenants, tenantId);
-            }
-            throw new Error(`Credentials not found for tenant ${tenantId}`);
-        });
+        if (_.has(this.tenants, tenantId)) {
+            return this.tenants[tenantId].credentials;
+        }
+        throw new Error(`Credentials not found for tenant ${tenantId}`);
     }
 
     cacheForAllTenants() {
+        logger.info('caching all tenants...');
         return this.getAllSubscribedTenants()
             .then(tenantDbRows => {
+                logger.info(`Found ${tenantDbRows.length} tenants`);
                 return Promise.map(tenantDbRows, tenantInfo => {
                         let tenantId = tenantInfo.TENANT_ID;
                         let keyId = tenantInfo.KEY_ID;
@@ -83,6 +83,7 @@ class TenantLifecycleManager {
     }
 
     getAllSubscribedTenants() {
+        logger.info('fetching all subscriptions');
         let hanaConnection, tenants = [];
         return hanaClient.createConnectionAsync(hanaConfig)
             .tap(conn => hanaConnection = conn)
@@ -110,9 +111,9 @@ class TenantLifecycleManager {
                             return reject(err);
                         }
                         if (!_.isArray(rows) || rows.length !== 1) {
-                            return resolve(rows[0]);
+                            return reject(new Error(`Fetching tenant ${tenantId} failed: something went awry`));
                         }
-                        return reject(new Error(`Fetching tenant ${tenantId} failed`));
+                        return resolve(rows[0]);
                     });
                 });
             })
@@ -126,7 +127,7 @@ class TenantLifecycleManager {
         let hanaConnection;
         return hanaClient.createConnectionAsync(hanaConfig)
             .tap(conn => hanaConnection = conn)
-            .then(conn => conn.prepareAsync('delete "business:TENANT_MASTER" where TENANT_ID=?'))
+            .then(conn => conn.prepareAsync('delete from "business::TENANT_MASTER" where TENANT_ID=?'))
             .then(stmt => {
                 return new Promise((resolve, reject) => {
                     stmt.exec([tenantId], (err, res) => {
@@ -148,10 +149,11 @@ class TenantLifecycleManager {
     }
 
     addTenantConfig(tenantId, instanceId, keyId) {
+        logger.info(`adding tenant config into master for ${tenantId}, ${instanceId}, ${keyId}`);
         let hanaConnection;
         return hanaClient.createConnectionAsync(hanaConfig)
             .tap(conn => hanaConnection = conn)
-            .then(conn => conn.prepareAsync('insert into "business:TENANT_MASTER" values(?,?,?)'))
+            .then(conn => conn.prepareAsync('insert into "business::TENANT_MASTER" (tenant_id, instance_id, key_id) values(?,?,?)'))
             .then(stmt => {
                 return new Promise((resolve, reject) => {
                     stmt.exec([tenantId, instanceId, keyId], (err, res) => {
@@ -173,6 +175,8 @@ class TenantLifecycleManager {
     }
 
     deployTenantContent(credentials) {
+        logger.info(`deploying content into tenant database`);
+        logger.info(`credentials used: ${credentials}`);
         let deployPromise = new Promise((resolve, reject) => {
             hdiDeployer.deploy(path.join(__dirname, '..', 'tenant-db'), getVcapServices(credentials), (err, result) => {
                 if (err) {
@@ -188,6 +192,7 @@ class TenantLifecycleManager {
     }
 
     onboardTenant(tenantId) {
+        logger.info(`onboarding for tenant ${tenantId} started`);
         let instanceId, keyId;
         Promise.try(() => {
                 this.addTenantConfigInCache(tenantId, {

@@ -5,13 +5,15 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const TenantContext = require('./routes/tenantContext');
+const logger = require('./logger');
 
-const hdbext = require('@sap/hdbext');
 const passport = require('passport');
 const xsenv = require('@sap/xsenv');
 const JWTStrategy = require('@sap/xssec').JWTStrategy;
 
-const indexRouter = require('./routes/index');
+const routers = require('./routes/index');
+const callbackRouter = routers.callbackRouter;
+const businessRouter = routers.businessRouter;
 const UAA_INSTANCE_NAME = process.env.XSUAA_INSTANCE;
 
 const app = express();
@@ -32,10 +34,6 @@ app.use(passport.authenticate('JWT', {
 
 xsenv.loadEnv();
 
-//configure HANA db connection for tenant
-app.use(TenantContext.getHdbConnectOptions());
-app.use(TenantContext.injectHdbTenant());
-
 app.use(express.json());
 app.use(express.urlencoded({
   extended: false
@@ -43,7 +41,11 @@ app.use(express.urlencoded({
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
+//configure callback routes for saas-provisioning
+app.use('/callback', callbackRouter);
+
+//configure hana DB connection for business routes
+app.use('/dbtask', TenantContext.getHdbConnectOptions(), TenantContext.injectHdbTenant(), businessRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -52,9 +54,9 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
+  logger.error('error', err);
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = err;
 
   // render the error page
   res.status(err.status || 500);

@@ -17,3 +17,5 @@ industry-management-ui/coverage
 industry-management-ui/target/
 industry-management-ui/node_modules
 industry-management-ui/dist
+db-access
+testDb.js
