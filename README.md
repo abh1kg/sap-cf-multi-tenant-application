@@ -1,4 +1,4 @@
-#### Developing a Multi-tenant Business Application on SAP Cloud Platform in the Cloud Foundry Environment
+### Developing a Multi-tenant Business Application on SAP Cloud Platform in the Cloud Foundry Environment
 
 This repository contains a sample reference application for developing and deploying a SaaS (software-as-a-service) multitenant business application on SAP Cloud Platform Cloud Foundry environment. Follow the instructions below to deploy the application on SAP Cloud Platform in a subaccount that is configured for the Cloud Foundry environment.
 
