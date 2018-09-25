@@ -1,9 +1,9 @@
 {
-    "appId": "multitenantindustry",
-    "displayName": "Industry Management Service",
+    "appId": "<generated_xsappname_for_xsuaa_environment>",
+    "displayName": "Industry Management Application",
     "description": "An application service to manage your product catalog",
     "category": "Sample Provider",
     "appUrls": {
-        "onSubscription": "https://industry-management-backend.<cf-application-domain>/callback/v1.0/tenants/{tenantId}"
+        "onSubscription": "https://<route_to_backend_app>/callback/v1.0/tenants/{tenantId}"
     }
 }
