@@ -1,0 +1,26 @@
+applications:
+- name: industrymanagementbackend
+  disk_quota: 1G
+  env:
+    HANA_DBAAS_INSTANCE: <hdi_service_instance_name_for_tenant_master>
+    HANA_DBAAS_INSTANCE_ID: <service_instance_id_for_hana_dbaas>
+    SAP_JWT_TRUST_ACL: |-
+      [
+        {
+          "clientid": "*",
+          "identityzone": "*"
+        }
+      ]
+    SPACE_DEVELOPER_PASSWORD: <password_for_space_developer_user>
+    SPACE_DEVELOPER_USER: <email_for_space_developer_user>
+    XSUAA_INSTANCE: <xsuaa_service_instance_name>
+    UI_APP_ROUTE: <route_for_ui_application_without_protocol>
+    DEBUG: hdbext:*
+  instances: 1
+  memory: 1G
+  routes:
+  - route: <route_for_backend_application_without_protocol>
+  services:
+  - <xsuaa_service_instance_name>
+  - <hdi_service_instance_name_for_tenant_master>
+  stack: cflinuxfs2

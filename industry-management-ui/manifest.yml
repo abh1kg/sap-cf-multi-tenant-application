@@ -1,0 +1,21 @@
+applications:
+- name: industrymanagementui
+  disk_quota: 256M
+  env:
+    TENANT_HOST_PATTERN: ^(.*)-<route_for_ui_app_without_protocol>
+    destinations: |-
+      [
+        {
+          "forwardAuthToken": true,
+          "name": "industrymanagementbackend_api",
+          "url": "https://<route_for_backend_app_without_protocol>"
+        }
+      ]
+    skip_ssl_validation: "true"
+  instances: 1
+  memory: 256M
+  routes:
+  - route: <route_for_ui_app_without_protocol>
+  services:
+  - <xsuaa_service_instance_name>
+  stack: cflinuxfs2

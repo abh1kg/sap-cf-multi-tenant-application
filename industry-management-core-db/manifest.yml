@@ -1,0 +1,10 @@
+applications:
+- name: industrymanagementcoredb
+  disk_quota: 1G
+  health-check-type: none
+  instances: 1
+  memory: 256M
+  no-route: true
+  services:
+  - <hdi_service_instance_name_for_tenant_master>
+  stack: cflinuxfs2
