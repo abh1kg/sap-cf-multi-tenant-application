@@ -1,0 +1,23 @@
+PROCEDURE "business::XSAPPUSER_GETPSE" (IN InPurpose VARCHAR (24), OUT OutName NVARCHAR (256))
+LANGUAGE SQLSCRIPT SQL SECURITY INVOKER AS
+varCounter INTEGER := 0;
+BEGIN
+  DECLARE ERROR_INVALID_USER CONDITION FOR SQL_ERROR_CODE 10332;
+  DECLARE varStatement NVARCHAR (256);
+  SELECT COUNT(*) INTO varCounter FROM SYS.PSES WHERE PURPOSE = :InPurpose;
+  IF (:varCounter = 0) THEN
+    IF (:InPurpose = 'JWT') THEN
+      OutName := 'SAPXSUAAJWT';
+    ELSEIF (:InPurpose = 'SAML') THEN
+      OutName := 'SAPXSUAASAML';
+    ELSE
+      OutName := 'SAPXSJWT';
+    END IF;
+    varStatement := 'CREATE PSE ' || :OutName;
+    EXEC :varStatement;
+    varStatement := 'SET PSE ' || :OutName || ' PURPOSE '  || :InPurpose;
+    EXEC :varStatement;
+  ELSE
+      SELECT NAME INTO OutName FROM SYS.PSES WHERE PURPOSE = :InPurpose;
+  END IF;
+END;

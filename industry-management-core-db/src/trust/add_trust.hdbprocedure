@@ -1,0 +1,8 @@
+PROCEDURE "business::XSAPPUSER_ADD_TRUST" (IN PseName NVARCHAR (256), IN CertId BIGINT)
+LANGUAGE SQLSCRIPT SQL SECURITY INVOKER AS
+varCounter INTEGER := 0;
+BEGIN
+  DECLARE varStatement NVARCHAR (256);
+  varStatement := 'ALTER PSE ' || :PseName || ' ADD CERTIFICATE ' || :CertId;
+  EXEC :varStatement;
+END;

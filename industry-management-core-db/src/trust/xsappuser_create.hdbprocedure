@@ -1,0 +1,16 @@
+PROCEDURE "business::XSAPPUSER_CREATE" (IN InPurpose VARCHAR (24), IN DnName NVARCHAR (5000))
+LANGUAGE SQLSCRIPT SQL SECURITY INVOKER AS
+varCounter INTEGER := 0;
+BEGIN
+  DECLARE ERROR_INVALID_USER CONDITION FOR SQL_ERROR_CODE 10332;
+  DECLARE certId BIGINT;
+  DECLARE pseName NVARCHAR (256);
+  CALL "business::XSAPPUSER_GETPSE"(:InPurpose , :pseName);
+  CALL "business::XSAPPUSER_GETCERT"(:DnName, :certId);
+  IF (:certId = 0) THEN
+     CALL "business::XSAPPUSER_CREATECERT"(:DnName, :pseName, :certId);
+  ELSE
+     CALL "business::XSAPPUSER_DELETE_TRUST"(:pseName, :certId);
+  END IF;
+  CALL "business::XSAPPUSER_ADD_TRUST"(:pseName, :certId);
+END;

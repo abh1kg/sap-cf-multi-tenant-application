@@ -1,0 +1,7 @@
+{
+  "tenant-granting-service": {
+    "application_user": {
+      "system_privileges" : ["TRUST ADMIN"]
+    }
+  }
+}
