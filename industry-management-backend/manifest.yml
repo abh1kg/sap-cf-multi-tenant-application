@@ -4,6 +4,7 @@ applications:
   env:
     HANA_DBAAS_INSTANCE: <hdi_service_instance_name_for_tenant_master>
     HANA_DBAAS_INSTANCE_ID: <service_instance_id_for_hana_dbaas>
+    TENANT_TRUST_SETUP_INSTANCE: <user_provided_service_instance_for_granting_service>
     SAP_JWT_TRUST_ACL: |-
       [
         {
@@ -23,4 +24,5 @@ applications:
   services:
   - <xsuaa_service_instance_name>
   - <hdi_service_instance_name_for_tenant_master>
+  - <user_provided_service_instance_for_granting_service>
   stack: cflinuxfs2

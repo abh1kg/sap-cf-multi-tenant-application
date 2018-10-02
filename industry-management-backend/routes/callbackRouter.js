@@ -22,7 +22,7 @@ router.put('/v1.0/tenants/:tenantId', function (req, res) {
 	const consumerTenantId = req.params.tenantId;
 
 	//Asynchronous provisioning of consumer tenant happens here
-	tenantLifecycleManager.onboardTenant(consumerTenantId);
+	tenantLifecycleManager.onboardTenant(consumerTenantId, consumerSubdomain);
 	const tenantUrl = `https://${consumerSubdomain}-${UI_APP_ROUTE}`;
 	res.status(200).send(tenantUrl);
 });
@@ -30,8 +30,9 @@ router.put('/v1.0/tenants/:tenantId', function (req, res) {
 router.delete('/v1.0/tenants/:tenantId', function (req, res) {
 	logger.info(`Request for unsubscribing received: Tenant ${req.params.tenantId}, Tenant Information: ${JSON.stringify(req.body)}`);
 	const consumerTenantId = req.params.tenantId;
+	const consumerSubdomain = req.body.subscribedSubdomain;
 	//Asynchronous deprovisioning of consumer tenant
-	tenantLifecycleManager.offboardTenant(consumerTenantId);
+	tenantLifecycleManager.offboardTenant(consumerTenantId, consumerSubdomain);
 	res.status(200).send({});
 });
 

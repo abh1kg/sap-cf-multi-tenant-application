@@ -5,5 +5,6 @@ COLUMN TABLE "business::PRODUCTS" (
 	supplier_name nvarchar(150) not null,
 	price float not null,
 	available boolean not null,
-	quantity smallint
+	quantity smallint,
+	country nvarchar(500)
 ) UNLOAD PRIORITY 5 AUTO MERGE

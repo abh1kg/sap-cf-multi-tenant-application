@@ -9,5 +9,4 @@ applications:
     TARGET_CONTAINER: <hdi_service_instance_name_for_tenant_master>
   services:
   - <hdi_service_instance_name_for_tenant_master>
-  - <user_provided_service_instance_for_granting_service>
   stack: cflinuxfs2
