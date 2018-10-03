@@ -230,6 +230,40 @@ class CloudControllerClient extends HttpClient {
             }, 202));
     }
 
+    getAllServiceKeys(instanceId) {
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'GET',
+                url: `/v2/service_keys`,
+                auth: {
+                    bearer: token
+                },
+                qs: {
+                    q: `service_instance_guid:${instanceId}`
+                },
+                json: true
+            }, 200))
+            .then(response => response.body.resources)
+            .then(resources => {
+                const keys = [];
+                for (let r of resources) {
+                    keys.push(r.metadata.guid);
+                }
+                return keys;
+            });
+    }
+
+    deleteAllServiceKeys(instanceId) {
+        return this.getAllServiceKeys(instanceId)
+            .then(keys => {
+                let promises = [];
+                for (let keyId of keys) {
+                    promises.push(this.deleteServiceKey(keyId));
+                }
+                return Promise.all(promises);
+            });
+    }
+
     createServiceKey(instanceId, key) {
         return this.cfUaa.getAccessToken()
             .then(token => this.request({
@@ -338,7 +372,8 @@ class CloudControllerClient extends HttpClient {
                 method: 'DELETE',
                 url: `/v2/service_instances/${instanceId}`,
                 qs: {
-                    accepts_incomplete: true
+                    accepts_incomplete: true,
+                    recursive: true
                 },
                 auth: {
                     bearer: token

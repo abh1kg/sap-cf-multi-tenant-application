@@ -29,8 +29,6 @@ class TenantContext {
         }
     }
 
-
-
     static getHdbConnectOptions() {
         return function (req, res, next) {
             const securityContext = req.authInfo;

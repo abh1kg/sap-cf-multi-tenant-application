@@ -253,7 +253,6 @@ class TenantLifecycleManager {
             .then(() => this.updateTenantConfigInCache(tenantId, {
                 state: OFFBOARDING
             }))
-            .then(() => this.cloudController.deleteServiceKey(keyId))
             .then(() => this.cloudController.deleteServiceInstance(instanceId))
             .then(() => this.cloudController.purgeRoute(appHostname, cfDomain))
             .then(() => this.deleteTenantConfig(tenantId))
