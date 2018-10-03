@@ -12,6 +12,7 @@ applications:
           "identityzone": "*"
         }
       ]
+    UI_APP_NAME: <name_for_ui_approuter_application>
     SPACE_DEVELOPER_PASSWORD: <password_for_space_developer_user>
     SPACE_DEVELOPER_USER: <email_for_space_developer_user>
     XSUAA_INSTANCE: <xsuaa_service_instance_name>

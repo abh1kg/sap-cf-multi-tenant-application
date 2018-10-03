@@ -7,6 +7,8 @@ const logger = require('../logger');
 const tenantLifecycleManager = accessors.tenantLifecycleManager;
 
 const UI_APP_ROUTE = process.env.UI_APP_ROUTE || 'industrymanagementui.cfapps.eu10.hana.ondemand.com';
+const cfDomain = UI_APP_ROUTE.substring(UI_APP_ROUTE.indexOf('.') + 1);
+const appPrefix = UI_APP_ROUTE.substring(0, UI_APP_ROUTE.indexOf('.'));
 
 router.get('/healthcheck', function (req, res) {
 	res.status(200).json({
@@ -22,7 +24,7 @@ router.put('/v1.0/tenants/:tenantId', function (req, res) {
 	const consumerTenantId = req.params.tenantId;
 
 	//Asynchronous provisioning of consumer tenant happens here
-	tenantLifecycleManager.onboardTenant(consumerTenantId, consumerSubdomain);
+	tenantLifecycleManager.onboardTenant(consumerTenantId, consumerSubdomain, `${consumerSubdomain}-${appPrefix}`, cfDomain);
 	const tenantUrl = `https://${consumerSubdomain}-${UI_APP_ROUTE}`;
 	res.status(200).send(tenantUrl);
 });
@@ -32,7 +34,7 @@ router.delete('/v1.0/tenants/:tenantId', function (req, res) {
 	const consumerTenantId = req.params.tenantId;
 	const consumerSubdomain = req.body.subscribedSubdomain;
 	//Asynchronous deprovisioning of consumer tenant
-	tenantLifecycleManager.offboardTenant(consumerTenantId, consumerSubdomain);
+	tenantLifecycleManager.offboardTenant(consumerTenantId, consumerSubdomain, `${consumerSubdomain}-${appPrefix}`, cfDomain);
 	res.status(200).send({});
 });
 

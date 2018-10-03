@@ -19,7 +19,7 @@ class HttpClient {
 
     _request(options, expectedStatusCode) {
         expectedStatusCode = expectedStatusCode || options.expectedStatusCode;
-        logger.debug(`Sending HTTP request to destination ${this.destination}`, options);
+        logger.debug(`Sending HTTP request to destination ${this.destination}`, `${options.method} ${options.url}`);
         return this.defaultRequest(options).spread((res, body) => {
             const result = {
                 statusCode: res.statusCode,
@@ -27,7 +27,7 @@ class HttpClient {
                 headers: res.headers,
                 body: body
             };
-            logger.debug('Received HTTP response:', result);
+            //logger.debug('Received HTTP response:', result);
             if (expectedStatusCode && res.statusCode !== expectedStatusCode) {
                 let message = `Got HTTP Status Code ${res.statusCode} expected ${expectedStatusCode}`;
                 logger.error(message, {

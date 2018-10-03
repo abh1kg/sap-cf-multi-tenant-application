@@ -34,8 +34,9 @@ class XsUaaTrustSetup {
     }
 
     establishTenantTrust() {
+        logger.info(`request received for establishing trust into HANA for tenant ${this.identityZone}`);
         let trustMetadata, hanaConnection;
-        this._downloadTrustJson()
+        return this._downloadTrustJson()
             .tap(trustJson => trustMetadata = trustJson)
             .then(() => hanaClient.createConnectionAsync(hanaConfig))
             .tap(conn => hanaConnection = conn)
@@ -51,10 +52,11 @@ class XsUaaTrustSetup {
             .finally(() => {
                 logger.info('closing hana connection');
                 hanaConnection.close();
-            })
+            });
     }
 
     destroyTenantTrust() {
+        logger.info(`request received for dropping trust from HANA for tenant ${this.identityZone}`);
         let hanaConnection;
         return hanaClient.createConnectionAsync(hanaConfig)
             .tap(conn => hanaConnection = conn)

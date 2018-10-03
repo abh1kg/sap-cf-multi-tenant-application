@@ -81,6 +81,7 @@ cf create-service xsuaa application <xsuaa_service_instance_name> -c xs-security
   - Open the `manifest.yml` deployment descriptor
   - Replace the following placeholders with appropriate values as described below:
     - `<user_provided_service_instance_for_granting_service>`: this should be replaced with the value for the user provided service instance created above
+    - `<name_for_ui_approuter_application>`: this should be replaced with the name of the Cloud Foundry approuter application which serves the UI resources and responds to tenant-specific route requests. In this example, the name is provided as `industrymanagementui` in the `manifest.yml` deployment descriptor within the application directory `industry-management-ui`
     - `<hdi_service_instance_name_for_tenant_master>`: this should be replaced with the value for the HDI service instance used above
     - `<service_instance_id_for_hana_dbaas>`: this should be replaced with the instance ID of the HANA DBaaS instance (also used above in the `database-parameters.json` file)
     - `<password_for_space_developer_user>`: this should be replaced with the password of a user in the space with Space Developer permissions
