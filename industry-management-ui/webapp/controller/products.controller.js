@@ -1,8 +1,9 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/routing/History",
-	"sap/ui/model/json/JSONModel"
-], function (Controller, History, JSONModel) {
+	"sap/ui/model/json/JSONModel",
+	"sap/m/MessageBox"
+], function (Controller, History, JSONModel, MessageBox) {
 	"use strict";
 	return Controller.extend("inventorymanagementui.inventorymanagementui.controller.products", {
 
@@ -54,6 +55,11 @@ sap.ui.define([
 					},
 					error: function (e) {
 						// API call failed
+						if (e.responseJSON){
+							console.log(e.responseJSON);
+							MessageBox.error(e.responseJSON.error);
+
+						}
 						console.log(e.message);
 						controller.getView().setBusy(false); // Stops the loading animation
 					}

@@ -1,6 +1,8 @@
 sap.ui.define([
-	"sap/ui/core/mvc/Controller"
-], function (Controller) {
+	"sap/ui/core/mvc/Controller",
+	"sap/ui/core/routing/History",
+	"sap/ui/model/json/JSONModel"
+], function (Controller, History, JSONModel) {
 	"use strict";
 
 	return Controller.extend("inventorymanagementui.inventorymanagementui.controller.landingHome", {

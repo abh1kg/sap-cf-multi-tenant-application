@@ -48,6 +48,10 @@ sap.ui.define([
 			}
 		},
 
+		handleLogout: function(oEvent){
+			window.location.replace('/logout');
+		},
+
 		/**
 		 * Every time you select the sidebar navigation panel button, it either expands to minimizes the sidebar
 		 */

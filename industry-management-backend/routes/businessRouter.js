@@ -6,7 +6,13 @@ const logger = require('../logger');
 const HdbInterface = require('../dbConnector/hanaInterface');
 
 function parseAttribute(attrValue) {
+    if (attrValue == null) {
+        return null;
+    }
     if (Array.isArray(attrValue)) {
+        attrValue = attrValue.filter(function (value, index, self) {
+            return self.indexOf(value) === index;
+        });
         return attrValue.join(',');
     } else {
         return attrValue.toString();
@@ -53,7 +59,7 @@ router.get('/selectMyProducts', function (req, res) {
     const tenantDb = new HdbInterface(req);
     tenantDb.selectProductsForTenant((err, rows) => {
         if (err) {
-            return res.status(400);
+            return res.status(400).send(err.message);
         }
         return res.status(200).send(rows);
     });
@@ -86,7 +92,7 @@ router.put('/insertValues', function (req, res) {
     }
 
     const tenantDb = new HdbInterface(req);
-    tenantDb.insertProductForTenant(name, description, supplier, price, availability, quantity, (err) => {
+    tenantDb.insertProductForTenant(name, description, supplier, price, availability, quantity, country, (err) => {
         if (err) {
             return res.status(400).send('Error! Could not insert product values');
         }

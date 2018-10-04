@@ -132,7 +132,9 @@ sap.ui.define([
 				error: function (e) {
 					// API call failed
 					controller.clearModelData("newProductModel");
-					console.log(e.message);
+					if (e.responseJSON){
+						return MessageBox.error(e.responseJSON.error); // Error message to show that there was some issue in adding the product to the DB
+					}
 					MessageBox.error("Sorry, an unknown error occurred. This could be a problem with your network connection or database. Please check and try again"); // Error message to show that there was some issue in adding the product to the DB
 				}
 			});

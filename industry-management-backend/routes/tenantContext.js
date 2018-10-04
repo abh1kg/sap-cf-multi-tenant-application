@@ -6,7 +6,14 @@ const logger = require('../logger');
 const attributes = ['Country'];
 
 function parseAttribute(attrValue) {
+    if (attrValue == null) {
+        return null;
+    }
     if (Array.isArray(attrValue)) {
+        //make the values unique (required if several role collection mappings exist)
+        attrValue = attrValue.filter(function (value, index, self) {
+            return self.indexOf(value) === index;
+        });
         return attrValue.join(',');
     } else {
         return attrValue.toString();
@@ -37,9 +44,10 @@ class TenantContext {
             if (tenantId) {
                 try {
                     const credentials = tenantManager.getCredentialsForTenant(tenantId);
+                    credentials.session = {};
                     //set session variables here using sessionVariable:KEY = value
                     for (const attr of attributes) {
-                        credentials[`sessionVariable:${attr.toUpperCase()}`] = parseAttribute(securityContext.getAttribute(attr));
+                        credentials.session[`${attr.toUpperCase()}`] = parseAttribute(securityContext.getAttribute(attr));
                     }
                     req.tenantDbOptions = credentials;
                     logger.info('credentials for hdb connection:', credentials);

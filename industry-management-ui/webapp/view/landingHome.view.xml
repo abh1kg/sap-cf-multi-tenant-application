@@ -1,56 +1,51 @@
-<mvc:View xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.ui.layout.form" 
-	controllerName="inventorymanagementui.inventorymanagementui.controller.landingHome" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:l="sap.ui.layout">
-	<MessagePage showHeader="true" title="{i18n>homeTitle}" text="{i18n>WelcomeMessage}" enableFormattedText="true" description=""
-		icon="sap-icon://customer-and-supplier"></MessagePage>
+<mvc:View xmlns:core="sap.ui.core" 
+	xmlns:tnt="sap.tnt" 
+	xmlns:mvc="sap.ui.core.mvc" 
+	xmlns="sap.m" 
+	xmlns:f="sap.ui.layout.form" controllerName="inventorymanagementui.inventorymanagementui.controller.landingHome" 
+	xmlns:html="http://www.w3.org/1999/xhtml" 
+	xmlns:l="sap.ui.layout">
+	<Panel width="auto" class="sapUiMediumMargin">
+		<content>
+			<Text text="{i18n>WelcomeMessage}" class="sapMH4FontSize" />
+		</content>
+	</Panel>
 	<ScrollContainer vertical="true" height="100%">
 		<f:Form id="FormDisplay" editable="false">
 			<f:layout>
-				<f:ResponsiveGridLayout
-					labelSpanXL="3"
-					labelSpanL="3"
-					labelSpanM="3"
-					labelSpanS="12"
-					adjustLabelSpan="false"
-					emptySpanXL="4"
-					emptySpanL="4"
-					emptySpanM="4"
-					emptySpanS="0"
-					columnsXL="1"
-					columnsL="1"
-					columnsM="1"
-					singleContainerFullSize="false" />
+				<f:ResponsiveGridLayout labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1" singleContainerFullSize="false" />
 			</f:layout>
 			<f:formContainers>
 				<f:FormContainer>
 					<f:formElements>
 						<f:FormElement label="User ID">
 							<f:fields>
-								<tnt:InfoLabel id="il1" text="{user>/user/userId}" renderMode="Narrow" colorScheme="1" displayOnly= "true"/>
+								<Text id="il1" text="{user>/user/userId}" />
 							</f:fields>
 						</f:FormElement>
 						<f:FormElement label="Registered Name">
 							<f:fields>
-								<tnt:InfoLabel id="il2" text="{user>/user/userName}" renderMode="Narrow" colorScheme="2" displayOnly= "true"/>
+								<Text id="il2" text="{user>/user/userName}" />
 							</f:fields>
 						</f:FormElement>
 						<f:FormElement label="Email">
 							<f:fields>
-								<tnt:InfoLabel id="il3" text="{user>/user/emailAddress}" renderMode="Narrow" colorScheme="3" displayOnly= "true"/>
+								<Text id="il3" text="{user>/user/emailAddress}" />
 							</f:fields>
 						</f:FormElement>
 						<f:FormElement label="Country">
 							<f:fields>
-								<tnt:InfoLabel id="il4" text="{user>/user/countryStr}" renderMode="Narrow" colorScheme="4" displayOnly= "true"/>
+								<Text id="il4" text="{user>/user/countryStr}"/>
 							</f:fields>
 						</f:FormElement>
 						<f:FormElement label="Viewer Role Assigned?">
 							<f:fields>
-								<tnt:InfoLabel id="il5" text="{user>/user/viewer_role}" renderMode="Loose" colorScheme="5" displayOnly= "true"/>
+								<Text id="il5" text="{user>/user/viewer_role}" />
 							</f:fields>
 						</f:FormElement>
 						<f:FormElement label="Modify Role Assigned?">
 							<f:fields>
-								<tnt:InfoLabel id="il6" text="{user>/user/modify_role}" colorScheme="6" width = "140px" displayOnly= "true"/>
+								<Text id="il6" text="{user>/user/modify_role}" />
 							</f:fields>
 						</f:FormElement>
 					</f:formElements>
