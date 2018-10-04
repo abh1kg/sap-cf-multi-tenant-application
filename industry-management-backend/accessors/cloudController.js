@@ -3,9 +3,12 @@
 const HttpClient = require('./HttpClient');
 const _ = require('lodash');
 const Promise = require('bluebird');
+const logger = require('../logger');
 const RetryOperation = require('../utils/retry');
 const Continue = require('../models/errors/ContinueWithNext');
-const applicationId = JSON.parse(process.env.VCAP_APPLICATION).application_id;
+
+const appName = process.env.UI_APP_NAME || 'industrymanagementui';
+const spaceId = JSON.parse(process.env.VCAP_APPLICATION).space_id;
 
 class CloudControllerClient extends HttpClient {
     constructor(uaa) {
@@ -18,6 +21,144 @@ class CloudControllerClient extends HttpClient {
             rejectUnauthorized: false
         }, 'cloud_controller');
         this.cfUaa = uaa;
+    }
+
+    purgeRoute(hostname, domain) {
+        logger.info(`Purging route with host ${hostname}, domain ${domain}`);
+        return this.getDomain(domain)
+            .then(domainId => this.getRoute(domainId, hostname))
+            .tap(routeId => logger.info(`received route id ${routeId}`))
+            .then(routeId => this.deleteRoute(routeId));
+    }
+
+    deleteRoute(routeId) {
+        logger.info(`Deleting route with routeId ${routeId}`);
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'DELETE',
+                url: `/v2/routes/${routeId}`,
+                auth: {
+                    bearer: token
+                },
+                qs: {
+                    recursive: true,
+                    async: false
+                }
+            }, 204));
+    }
+
+    getRoute(domainId, hostname) {
+        logger.info(`fetching route information for domain ${domainId} and host ${hostname}`)
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'GET',
+                url: '/v2/routes',
+                auth: {
+                    bearer: token
+                },
+                qs: {
+                    q: [`domain_guid:${domainId}`, `host:${hostname}`]
+                },
+                useQuerystring: true
+            }, 200))
+            .then(res => {
+                let matchedRoutes = JSON.parse(res.body);
+                if (matchedRoutes.total_results !== 1) {
+                    throw new Error(`Route URL with domain id ${domainId} and ${hostname} not found`);
+                }
+                let resRoute = matchedRoutes.resources[0];
+                return resRoute.metadata.guid;
+            });
+    }
+
+    getDomain(domain) {
+        logger.info(`fetching domain information for domain ${domain}`)
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'GET',
+                url: '/v2/domains',
+                auth: {
+                    bearer: token
+                },
+                qs: {
+                    q: `name:${domain}`
+                }
+            }, 200))
+            .then(res => {
+                let matchedDomains = JSON.parse(res.body);
+                if (matchedDomains.total_results !== 1) {
+                    throw new Error(`Domain URL ${domain} not found`);
+                }
+                let resDomain = matchedDomains.resources[0];
+                return resDomain.metadata.guid;
+            });
+    }
+
+    getApp(appName) {
+        logger.info(`fetching app information for ${appName}`);
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'GET',
+                url: '/v2/apps',
+                auth: {
+                    bearer: token
+                },
+                qs: {
+                    q: [`name:${appName}`, `space_guid:${spaceId}`]
+                },
+                useQuerystring: true,
+                json: true
+            }, 200))
+            .then(res => {
+                let matched = res.body;
+                if (matched.total_results !== 1) {
+                    throw new Error(`App ${appName} not found`);
+                }
+                let app = matched.resources[0];
+                return app.metadata.guid;
+            })
+    }
+
+    mapRoute(hostname, domain) {
+        logger.info(`mapping app to route with hostname ${hostname} and domain ${domain}`);
+        let routeId;
+        return this.getDomain(domain)
+            .then(domainId => this.createRoute(domainId, spaceId, hostname))
+            .tap(rid => routeId = rid)
+            .then(() => this.getApp(appName))
+            .then(appId => this.associateRouteToApp(routeId, appId));
+    }
+
+    associateRouteToApp(routeId, applicationId) {
+        logger.info(`associating route ${routeId} to app ${applicationId}`)
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'PUT',
+                url: `/v2/routes/${routeId}/apps/${applicationId}`,
+                auth: {
+                    bearer: token
+                },
+                json: true
+            }, 201));
+    }
+
+    createRoute(domainId, spaceId, host) {
+        logger.info(`creating route with coordinates ${domainId}, ${spaceId}, ${host}`);
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'POST',
+                url: '/v2/routes',
+                auth: {
+                    bearer: token
+                },
+                body: {
+                    domain_guid: domainId,
+                    space_guid: spaceId,
+                    host: host
+                },
+                json: true
+            }, 201))
+            .then(routeResponse => routeResponse.body.metadata.guid);
     }
 
     getServiceId(serviceName) {
@@ -87,6 +228,40 @@ class CloudControllerClient extends HttpClient {
                 },
                 json: true
             }, 202));
+    }
+
+    getAllServiceKeys(instanceId) {
+        return this.cfUaa.getAccessToken()
+            .then(token => this.request({
+                method: 'GET',
+                url: `/v2/service_keys`,
+                auth: {
+                    bearer: token
+                },
+                qs: {
+                    q: `service_instance_guid:${instanceId}`
+                },
+                json: true
+            }, 200))
+            .then(response => response.body.resources)
+            .then(resources => {
+                const keys = [];
+                for (let r of resources) {
+                    keys.push(r.metadata.guid);
+                }
+                return keys;
+            });
+    }
+
+    deleteAllServiceKeys(instanceId) {
+        return this.getAllServiceKeys(instanceId)
+            .then(keys => {
+                let promises = [];
+                for (let keyId of keys) {
+                    promises.push(this.deleteServiceKey(keyId));
+                }
+                return Promise.all(promises);
+            });
     }
 
     createServiceKey(instanceId, key) {
@@ -159,7 +334,7 @@ class CloudControllerClient extends HttpClient {
     }
 
     createServiceInstanceForTenant(tenantId) {
-        const instanceName = `tenant-${applicationId}-${tenantId}`;
+        const instanceName = `tenant-${tenantId}`;
 
         return Promise.try(() => {
                 return this.getServiceId('hana');
@@ -197,7 +372,8 @@ class CloudControllerClient extends HttpClient {
                 method: 'DELETE',
                 url: `/v2/service_instances/${instanceId}`,
                 qs: {
-                    accepts_incomplete: true
+                    accepts_incomplete: true,
+                    recursive: true
                 },
                 auth: {
                     bearer: token

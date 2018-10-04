@@ -22,6 +22,12 @@
 					<Column hAlign="End">
 						<Text text="{i18n>quantityColumn}"/>
 					</Column>
+					<Column hAlign="End">
+						<Text text="{i18n>countryColumn}"/>
+					</Column>
+					<Column hAlign="End">
+						<Text text="{i18n>createdByColumn}"/>
+					</Column>
 				</columns>
 				<items>
 					<ColumnListItem>
@@ -32,6 +38,8 @@
 							<Text text="{products>price}"/>
 							<Text text="{parts: [{path:'products>available'}], formatter:'.formatAvailabilityOption'}"/>
 							<Text text="{products>quantity}"/>
+							<Text text="{products>country}"/>
+							<Text text="{products>created_by}"/>
 						</cells>
 					</ColumnListItem>
 				</items>

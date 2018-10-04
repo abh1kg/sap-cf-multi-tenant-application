@@ -8,6 +8,7 @@
     "@sap/hana-client": "~2.3",
     "@sap/hdbext": "^4.7.2",
     "@sap/hdi-deploy": "^3.7.0",
+    "@sap/odata-v4": "^1.7.0",
     "@sap/xsenv": "*",
     "@sap/xssec": "^2.1.14",
     "basic-auth": "1.0.4",

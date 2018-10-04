@@ -16,6 +16,11 @@
 									<Input placeholder="{i18n>productnameFormPlaceholder}" width="50%" value="{newProductModel>/name}" liveChange="onNameChange"/>
 								</sap.ui.layout.form:fields>
 							</sap.ui.layout.form:FormElement>
+							<sap.ui.layout.form:FormElement label="{i18n>countryLabel}">
+								<sap.ui.layout.form:fields>
+									<Input placeholder="{i18n>countryLabel}" width="50%" value="{newProductModel>/country}" liveChange="onNameChange"/>
+								</sap.ui.layout.form:fields>
+							</sap.ui.layout.form:FormElement>
 							<sap.ui.layout.form:FormElement label="{i18n>descriptionFormLabel}">
 								<sap.ui.layout.form:fields>
 									<Input placeholder="{i18n>descriptionnameFormPlaceholder}" width="50%" value="{newProductModel>/description}" liveChange="onDescriptionChange"/>

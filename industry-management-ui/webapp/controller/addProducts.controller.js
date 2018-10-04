@@ -97,25 +97,23 @@ sap.ui.define([
 		 */
 		onSaveButtonPress: function (evt) {
 			var controller = this;
-
 			var product_name = this.getView().getModel("newProductModel").getData().name;
 			var product_description = this.getView().getModel("newProductModel").getData().description;
 			var product_supplier = this.getView().getModel("newProductModel").getData().supplier;
 			var product_price = this.getView().getModel("newProductModel").getData().price;
 			var product_availability = this.getView().getModel("newProductModel").getData().available;
 			var product_quantity = this.getView().getModel("newProductModel").getData().quantity;
+			var product_country = this.getView().getModel('newProductModel').getData().country;
 
 			// Validates each input entered by the user
 			if (this.isStringInvalid(product_name) || this.isStringInvalid(product_description) || this.isStringInvalid(product_supplier) ||
-				this.isStringInvalid(
-					product_price) || this.isStringInvalid(product_availability) || this.isStringInvalid(product_quantity)) {
+				this.isStringInvalid(product_price) || this.isStringInvalid(product_availability) || this.isStringInvalid(product_quantity) || this.isStringInvalid(product_country)) {
 				MessageBox.error("The values you've entered are invalid. Please try again");
 				return;
 			}
 
 			// Convert the JSON data into a string which will be sent to the backend
 			var productDetails = JSON.stringify(this.getView().getModel("newProductModel").getData());
-
 			var url = "/inventorymanagementbackend/dbtask/insertValues";
 
 			jQuery.ajax({
@@ -134,10 +132,12 @@ sap.ui.define([
 				error: function (e) {
 					// API call failed
 					controller.clearModelData("newProductModel");
+					if (e.responseJSON){
+						return MessageBox.error(e.responseJSON.error); // Error message to show that there was some issue in adding the product to the DB
+					}
 					MessageBox.error("Sorry, an unknown error occurred. This could be a problem with your network connection or database. Please check and try again"); // Error message to show that there was some issue in adding the product to the DB
 				}
 			});
-
 		},
 
 		/**

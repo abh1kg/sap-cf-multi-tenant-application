@@ -7,6 +7,7 @@ const hanaClient = Promise.promisifyAll(require('@sap/hdbext'));
 const xsenv = require('@sap/xsenv');
 const hdiDeployer = require('@sap/hdi-deploy/library');
 const logger = require('../logger');
+const XsuaaTrustManager = require('../dbConnector/XsUaaTrustManager');
 
 const ONBOARDED = 'ONBOARDED';
 const ONBOARDING = 'ONBOARDING_IN_PROCESS';
@@ -100,6 +101,7 @@ class TenantLifecycleManager {
     }
 
     getTenantConfig(tenantId) {
+        logger.info(`fetching tenant config for ${tenantId}`);
         let hanaConnection;
         return hanaClient.createConnectionAsync(hanaConfig)
             .tap(conn => hanaConnection = conn)
@@ -124,6 +126,7 @@ class TenantLifecycleManager {
     }
 
     deleteTenantConfig(tenantId) {
+        logger.info(`deleting tenant config for ${tenantId}`);
         let hanaConnection;
         return hanaClient.createConnectionAsync(hanaConfig)
             .tap(conn => hanaConnection = conn)
@@ -191,7 +194,19 @@ class TenantLifecycleManager {
         return deployPromise;
     }
 
-    onboardTenant(tenantId) {
+    setupTrustForTenant(tenantDomain, tenantId) {
+        logger.info(`setting up tenant trust config for ${tenantId}`);
+        const trustManager = new XsuaaTrustManager(tenantDomain, tenantId);
+        return trustManager.establishTenantTrust();
+    }
+
+    dropTrustForTenant(tenantDomain, tenantId) {
+        logger.info(`removing tenant config for ${tenantId}`);
+        const trustManager = new XsuaaTrustManager(tenantDomain, tenantId);
+        return trustManager.destroyTenantTrust();
+    }
+
+    onboardTenant(tenantId, tenantDomain, appHostname, cfDomain) {
         logger.info(`onboarding for tenant ${tenantId} started`);
         let instanceId, keyId;
         Promise.try(() => {
@@ -219,13 +234,16 @@ class TenantLifecycleManager {
                 });
                 return this.addTenantConfig(tenantId, instanceId, keyId, ONBOARDING);
             })
+            .then(() => this.setupTrustForTenant(tenantDomain, tenantId))
+            .then(() => this.cloudController.mapRoute(appHostname, cfDomain))
             .then(() => {
                 logger.info(`Onboarding completed for tenant ${tenantId}`);
                 logger.info(`Tenant information: ${JSON.stringify(this.tenants[tenantId])}`)
             });
     }
 
-    offboardTenant(tenantId) {
+    offboardTenant(tenantId, tenantDomain, appHostname, cfDomain) {
+        logger.info(`offboarding tenant ${tenantId}`);
         let instanceId, keyId;
         this.getTenantConfig(tenantId)
             .then(tenant => {
@@ -235,14 +253,15 @@ class TenantLifecycleManager {
             .then(() => this.updateTenantConfigInCache(tenantId, {
                 state: OFFBOARDING
             }))
-            .then(() => this.cloudController.deleteServiceKey(keyId))
             .then(() => this.cloudController.deleteServiceInstance(instanceId))
+            .then(() => this.cloudController.purgeRoute(appHostname, cfDomain))
             .then(() => this.deleteTenantConfig(tenantId))
             .then(() => this.updateTenantConfigInCache(tenantId, {
                 state: OFFBOARDED,
                 instanceId: null,
                 tenantId: null
-            }));
+            }))
+            .then(() => this.dropTrustForTenant(tenantDomain, tenantId));
     }
 }
 

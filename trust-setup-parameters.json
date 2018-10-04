@@ -1,0 +1,11 @@
+{
+    "host": "<host_for_hana_dbaas_instance>",
+    "port": "<port_for_hana_dbaas_instance>",
+    "password": "<password_for_restricted_user>",
+    "certificate": "<certificate_for_hana_database_for_secure_logon>",
+    "tags": [
+        "hana"
+    ],
+    "schema": "TENANT_TRUST_CONFIG",
+    "user": "<restricted_user_name>"
+}

@@ -15,6 +15,17 @@
 		"name": "$XSAPPNAME.Modify",
 		"description": "Update Scope for management of products"
 	}],
+	"attributes": [{
+			"name": "Country",
+			"description": "Country",
+			"valueType": "string"
+		},
+		{
+			"name": "CostCenter",
+			"description": "Cost Center ID",
+			"valueType": "string"
+		}
+	],
 	"role-templates": [{
 		"name": "product_viewer",
 		"description": "Role for read-only operations on products",
@@ -27,6 +38,26 @@
 		"scope-references": [
 			"$XSAPPNAME.Modify",
 			"$XSAPPNAME.Viewer"
+		]
+	}, {
+		"name": "product_viewer_with_attributes",
+		"description": "Role for read-only operations on products with attributes",
+		"scope-references": [
+			"$XSAPPNAME.Viewer"
+		],
+		"attribute-references": [
+			"Country"
+		]
+	}, {
+		"name": "product_update_with_attributes",
+		"description": "Role for management of products with attributes",
+		"scope-references": [
+			"$XSAPPNAME.Viewer",
+			"$XSAPPNAME.Modify"
+		],
+		"attribute-references": [
+			"Country",
+			"CostCenter"
 		]
 	}]
 }
