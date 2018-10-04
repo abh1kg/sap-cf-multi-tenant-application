@@ -124,3 +124,13 @@ cf create-service xsuaa application <xsuaa_service_instance_name> -c xs-security
     cf restage industrymanagementbackend
     ```
 
+#### Subscription Process
+
+When the provider application receives a subscription request, the provider performs the following steps:
+
+- Provisions an HDI container connected to the DBaaS instance corresponding to the consumer subaccount
+- Creates a Cloud Foundry Service Key for the HDI container
+- Deploys the database artifacts into the corresponding HDI container for the tenant using the credentials of the service key
+- Creates a mapping in the DBaaS instance which links the consumer subaccount, the HDI container service instance ID and the generated service key ID
+- Establishes trust between the consumer subaccount's identity realm and the HANA database
+
