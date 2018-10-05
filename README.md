@@ -1,16 +1,16 @@
-### Developing a Multi-tenant Business Application on SAP Cloud Platform in the Cloud Foundry Environment
+## Developing a Multi-tenant Business Application on SAP Cloud Platform in the Cloud Foundry Environment
 
 This repository contains a sample reference application for developing and deploying a SaaS (software-as-a-service) multitenant business application on SAP Cloud Platform Cloud Foundry environment. Follow the instructions below to deploy the application on SAP Cloud Platform in a subaccount that is configured for the Cloud Foundry environment.
 
-#### Introduction to Multi-tenant Business Applications
+### Introduction to Multi-tenant Business Applications
 
 A multi-tenant business application provides a suite of functional services to a horde of customers. The developer and deployer of the application service (e.g. a company with a Global Account on SAP Cloud Platform) is often referred to as the _provider_ while the customers of the service are referred to as _consumers_.
 
-#### Prerequisites
+### Prerequisites
 
 - You understand the concepts of multitenancy in the Cloud Foundry environment; see this [blog](https://blogs.sap.com/2018/09/17/developing-multitenant-applications-on-sap-cloud-platform-cloud-foundry-environment/).
 - You understand the domain model (account structure) of SAP Cloud Platform; see this [blog](https://blogs.sap.com/2018/05/24/a-step-by-step-guide-to-the-unified-sap-cloud-platform-cockpit-experience/).
-- You know how to work with the Cloud Foundry Command Line Interface (cf CLI).
+- You know how to work with the Cloud Foundry Command Line Interface (cf-cli).
 
 #### Notes
 
@@ -124,7 +124,7 @@ cf create-service xsuaa application <xsuaa_service_instance_name> -c xs-security
     cf restage industrymanagementbackend
     ```
 
-#### Subscription Process
+### Subscription Process
 
 When the provider application receives a subscription request, the provider performs the following steps:
 
@@ -134,3 +134,11 @@ When the provider application receives a subscription request, the provider perf
 - Creates a mapping in the DBaaS instance which links the consumer subaccount, the HDI container service instance ID and the generated service key ID
 - Establishes trust between the consumer subaccount's identity realm and the HANA database
 
+### Using SAP Identity Authentication Service (formerly known as SAP Cloud Identity Service)
+
+The users of the business application would generally be authenticated and stored in a custom _Identity Realm_, commonly called _Identity Providers_. This means that there needs to be security trust established between the SAP authorization service (_service provider_) and the identity provider itself. 
+
+The _SAP Identity Authentication Service_ is a cloud service solution for secure authentication and user management in SAP cloud and on-premise applications. It provides a suite of services for authentication, single sign-on, and user management. 
+The service provider's metadata can be downloaded from the consumer subaccount's authentication domain and uploaded to the Identity Authentication service to establish the _first leg of trust_. The _second leg of trust_ needs to be established using the SAP Cloud Platform Cockpit _Trust Configuration_ UI.
+
+Once the trust configuration and two-way security initiative is set up, the Identity Authentication service can be used by the tenant administrator to set up relevant user groups, define user attributes, etc. The SAP Authorization component (XSUAA) is responsible for intercepting the user relevant information and passing it along to the target business application in an encoded format (JSON Web Token) using standard OAuth 2.0 protocol.
