@@ -2,7 +2,6 @@
 # shellcheck disable=SC1090
 # shellcheck disable=SC2162
 set -e
-set +x
 
 red=$(tput setaf 1)
 green=$(tput setaf 2)
