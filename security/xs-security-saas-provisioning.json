@@ -1,0 +1,12 @@
+{
+	"xsappname": "productsubscriber",
+	"tenant-mode": "shared",
+	"description": "Security profile of Multi-Tenant Product Catalog Subscriptions",
+	"scopes": [{
+		"name": "$XSAPPNAME.Callback",
+		"description": "With this scope set, the callbacks for tenant onboarding, offboarding and getDependencies can be called.",
+		"grant-as-authority-to-apps": [
+			"$XSAPPNAME(application,sap-provisioning,tenant-onboarding)"
+		]
+	}]
+}

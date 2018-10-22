@@ -1,0 +1,9 @@
+{
+    "appId": "<generated_xsappname_for_xsuaa_environment>",
+    "displayName": "Product Management Application",
+    "description": "An application service to manage your product catalog",
+    "category": "Product Catalog Provider",
+    "appUrls": {
+        "onSubscription": "https://<route_for_tenant_manager_application_without_protocol>/callback/v1.0/tenants/{tenantId}"
+    }
+}

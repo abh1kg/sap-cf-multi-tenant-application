@@ -1,0 +1,19 @@
+-- Extension required
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Sequences required
+CREATE SEQUENCE "tenantmanager::TENANT_SEQ" INCREMENT BY 1 START WITH 1 MINVALUE 1 MAXVALUE 4611686018427387903 NO CYCLE;
+
+-- Types required
+CREATE TYPE consumer_state AS ENUM ('ONBOARDING_IN_PROGRESS', 'ONBOARDED');
+
+-- Tables required
+CREATE TABLE "tenantmanager::TENANT_SUBSCRIPTIONS" (
+    consumer_subaccount_id TEXT NOT NULL,
+    consumer_subdomain TEXT NOT NULL,
+    consumer_subaccount_name TEXT NOT NULL,
+    credentials JSON NOT NULL,
+    state consumer_state NOT NULL DEFAULT 'ONBOARDING_IN_PROGRESS',
+    enabled_extensions TEXT ARRAY,
+    PRIMARY KEY (consumer_subaccount_id));

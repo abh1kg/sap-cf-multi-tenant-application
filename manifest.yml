@@ -1,0 +1,83 @@
+---
+applications:
+- name: tenant-manager-database-deployer
+  memory: 1G
+  path: database/target/tenantdb-management-0.0.1.jar
+  buildpack: java_buildpack
+  services:
+  - <master_postgres_service_instance_name>
+  env:
+    POSTGRES_INSTANCE: <master_postgres_service_instance_name>
+
+- name: tenant-manager
+  path: tenant-manager
+  disk_quota: 1G
+  env:
+    POSTGRES_INSTANCE: <master_postgres_service_instance_name>
+    REDIS_INSTANCE: <service_instance_name_for_redis_instance>
+    SAP_JWT_TRUST_ACL: |-
+      [
+        {
+          "clientid": "*",
+          "identityzone": "*"
+        }
+      ]
+    UI_APP_NAME: <name_for_ui_approuter_application>
+    XSUAA_INSTANCE: <xsuaa_service_instance_name>
+    UI_APP_ROUTE: <route_for_ui_application_without_protocol>
+    BASIC_AUTH_ADMIN_USER: <generated_username_for_devops_onboarding>
+    BASIC_AUTH_ADMIN_PASSWORD: <generated_password_for_devops_onboarding>
+  instances: 1
+  memory: 1G
+  routes:
+  - route: <route_for_tenant_manager_application_without_protocol>
+  services:
+  - <xsuaa_service_instance_name>
+  - <master_postgres_service_instance_name>
+  - <service_instance_name_for_redis_instance>
+
+- name: product-management-backend
+  disk_quota: 1G
+  path: product-service
+  env:
+    REDIS_INSTANCE: <redis_service_instance_name_for_config_cache>
+    XSUAA_INSTANCE: <business_xsuaa_service_instance_name>
+    POSTGRES_INSTANCE: <master_postgres_service_instance_name>
+    SAP_JWT_TRUST_ACL: |-
+      [
+        {
+          "clientid": "*",
+          "identityzone": "*"
+        }
+      ]
+  instances: 1
+  memory: 1G
+  routes:
+  - route: <route_for_backend_application_without_protocol>
+  services:
+  - <business_xsuaa_service_instance_name>
+  - <redis_service_instance_name_for_config_cache>
+  - <master_postgres_service_instance_name>
+  stack: cflinuxfs2
+
+- name: product-management-ui
+  disk_quota: 256M
+  path: product-ui
+  env:
+    TENANT_HOST_PATTERN: ^(.*)-<route_for_ui_app_without_protocol>
+    destinations: |-
+      [
+        {
+          "forwardAuthToken": true,
+          "name": "productbackend_api",
+          "url": "https://<route_for_backend_app_without_protocol>"
+        }
+      ]
+    skip_ssl_validation: "true"
+  instances: 1
+  memory: 256M
+  routes:
+  - route: <route_for_ui_app_without_protocol>
+  services:
+  - <business_xsuaa_service_instance_name>
+  stack: cflinuxfs2

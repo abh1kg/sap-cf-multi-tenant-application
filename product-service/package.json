@@ -1,0 +1,32 @@
+{
+  "name": "product-service-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node ./bin/bootstrap.js"
+  },
+  "dependencies": {
+    "@sap/xsenv": "^1.2.9",
+    "@sap/xssec": "^2.1.15",
+    "bluebird": "^3.4.6",
+    "body-parser": "1.15.2",
+    "cookie-parser": "^1.4.3",
+    "debug": "~2.6.9",
+    "express": "^4.16.4",
+    "express-rate-limit": "^2.12.2",
+    "http-errors": "^1.7.0",
+    "ioredis": "^4.2.0",
+    "is-html": "^1.1.0",
+    "jade": "~1.11.0",
+    "lodash": "^4.17.5",
+    "passport": "^0.4.0",
+    "pg": "^7.5.0",
+    "pg-pool": "^2.0.3",
+    "request": "2.69.0",
+    "urijs": "^1.19.1",
+    "uuid": "*",
+    "winston": "2.4.4"
+  },
+  "engines": {
+    "node": "8.x"
+  }
+}

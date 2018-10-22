@@ -1,0 +1,12 @@
+database/target
+database/.classpath
+database/.settings
+database/.project
+manifest-canary.yml
+.vscode
+tenant-manager/node_modules/
+tenant-manager/.testresults/
+product-service/node_modules/
+product-service/.testresults/
+product-ui/node_modules/
+product-ui/.testresults/
