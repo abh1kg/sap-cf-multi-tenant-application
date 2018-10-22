@@ -4,6 +4,8 @@ database/.settings
 database/.project
 manifest-canary.yml
 .vscode
+tenant-manager/admin/create_consumer_with_arguments.sh
+tenant-manager/admin/data.json
 tenant-manager/node_modules/
 tenant-manager/.testresults/
 product-service/node_modules/

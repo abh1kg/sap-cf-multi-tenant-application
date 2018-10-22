@@ -34,7 +34,7 @@ router.get('/:subaccountId', function (req, res) {
         });
 });
 
-router.post('/:subaccountId', function (req, res) {
+router.put('/:subaccountId', function (req, res) {
     const opts = {
         consumer_subaccount_id: req.params.subaccountId,
         consumer_subdomain: req.body.subaccountDomain,
@@ -44,7 +44,7 @@ router.post('/:subaccountId', function (req, res) {
     logger.info('Request received for administering tenant subaccount', opts);
 
     // call postgres to insert the metadata here
-    return postgres.addTenantMetadata(opts)
+    return postgres.addOrUpdateTenantMetadata(opts)
         .then(() => {
             // we are REST-compliant here
             res.status(201).header('Location', `/admin/subscribers/${req.params.subaccountId}`)

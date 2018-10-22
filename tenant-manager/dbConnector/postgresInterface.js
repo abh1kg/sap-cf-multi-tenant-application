@@ -144,6 +144,26 @@ class PostgresqlInterface {
             .finally(() => pgClient.release());
     }
 
+    addOrUpdateTenantMetadata(opts = {}) {
+        if (_.isEmpty(opts)) {
+            throw new Error('addOrUpdateTenantMetadata:: invalid arguments');
+        }
+        return this.fetchTenantMetadata(opts.consumer_subaccount_id)
+            .then(results => results.length > 0)
+            .then(updateRequired => {
+                if (updateRequired) {
+                    return this.updateTenantMetadata(opts.consumer_subaccount_id, {
+                        q_sets: opts,
+                        q_wheres: {
+                            'consumer_subaccount_id': opts.consumer_subaccount_id
+                        }
+                    });
+                } else {
+                    return this.addTenantMetadata(opts);
+                }
+            });
+    }
+
 }
 
 module.exports = new PostgresqlInterface();
