@@ -324,7 +324,9 @@ print_delimiter
 if [ "$admin_status" == "201" ]; then
 	echo ""
 	echo "=================================================================================="
+	echo ""
 	echo "Subaccount administration pre-onboarding completed. Details are provided below:"
+	echo ""
 	echo "  Subaccount Name: $consumer_subaccount_name"
 	echo "  Subaccount Domain: $consumer_subaccount_domain"
 	echo "  PostgreSQL Service Plan: $consumer_service_plan"
@@ -339,6 +341,7 @@ else
 	echo ""
 	echo "=================================================================================="
 	echo "Subaccount administration pre-onboarding partially completed. Details are provided below:"
+	echo ""
 	echo "  Subaccount Name: $consumer_subaccount_name"
 	echo "  Subaccount Domain: $consumer_subaccount_domain"
 	echo "  PostgreSQL Service Plan: $consumer_service_plan"
