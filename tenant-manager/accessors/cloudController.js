@@ -311,49 +311,6 @@ class CloudControllerClient extends HttpClient {
             .then(res => res.body);
     }
 
-    isInstanceCreated(instanceId) {
-        return this.getServiceInstanceState(instanceId)
-            .then(res => {
-                const opState = res.entity.last_operation.state;
-                const opType = res.entity.last_operation.type;
-                if (opType === 'create' && opState === 'in progress') {
-                    throw new Continue(`Instance creation in progress for ${instanceId}`);
-                }
-                if (opType === 'create' && opState === 'failed') {
-                    throw new Error(`Instance creation failed for ${instanceId}`);
-                }
-                return instanceId;
-            });
-    }
-
-    waitForInstance(instanceId) {
-        const retryOp = RetryOperation.create({
-            fixedDelay: true
-        });
-        return retryOp.retry(_.bind(this.isInstanceCreated, this, instanceId));
-    }
-
-    createServiceInstanceForTenant(tenantId) {
-        const instanceName = `tenant-${tenantId}`;
-
-        return Promise.try(() => {
-                return this.getServiceId('hana');
-            })
-            .then(hdiServiceId => {
-                return this.getServicePlan(hdiServiceId, 'hdi-shared');
-            })
-            .then(planId => {
-                return this.createInstance(instanceName, planId, {
-                    'database_id': process.env.HANA_DBAAS_INSTANCE_ID //3cd8628e-87c0-4d2f-9472-33ccb1c984f6
-                });
-            })
-            .then(res => res.body)
-            .then(res => {
-                const generatedInstanceId = res.metadata.guid;
-                return this.waitForInstance(generatedInstanceId);
-            });
-    }
-
     deleteServiceKey(keyId) {
         return this.cfUaa.getAccessToken()
             .then(token => this.request({

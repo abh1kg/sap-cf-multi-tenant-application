@@ -20,17 +20,18 @@ class TenantObjectDeployer {
             'cwd': path.join(__dirname, '..'),
             'sql-file': true,
             'config': this.pgConfig
-        }, (migrator) => {
-            logger.info('closing PostgreSQL connection for deploying content...');
-            migrator.driver.close(function (err) {
-                if (err){
-                    logger.error('error in driver close', err);
-                }
-                logger.info('Done with object migrations onto PostgreSQL');
-            });
         });
         return postgresMigrator.up()
             .then(() => logger.info('deployment of all database objects completed successfully'))
+            .then(() => {
+                if (postgresMigrator.driver) {
+                    postgresMigrator.driver.close(err => {
+                        if (err) {
+                            return logger.error('error in closing postgresql connection', err);
+                        }
+                    });
+                }
+            })
             .catch(err => {
                 logger.error('error deploying objects into PostgreSQL database', JSON.stringify(err));
                 throw err;

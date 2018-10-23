@@ -19,7 +19,7 @@ applications:
       [
         {
           "clientid": "*",
-          "identityzone": "*"
+          "identityzone": "sap-provisioning"
         }
       ]
     UI_APP_NAME: product-management-ui
@@ -27,6 +27,10 @@ applications:
     UI_APP_ROUTE: <route_for_ui_application_without_protocol>
     BASIC_AUTH_ADMIN_USER: <generated_username_for_devops_onboarding>
     BASIC_AUTH_ADMIN_PASSWORD: <generated_password_for_devops_onboarding>
+    SPACE_DEVELOPER_USER: <space_developer_user>
+    SPACE_DEVELOPER_PASSWORD: <space_developer_password>
+    UAA_ENDPOINT: <cf_uaa_endpoint>
+    CF_API: <cf_api_endpoint>
   instances: 1
   memory: 1G
   routes:
