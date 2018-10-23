@@ -10,9 +10,8 @@ class TenantObjectDeployer {
         this.credentials = credentials;
         this.dbUrl = credentials.uri;
         this.pgConfig = {
-            default: subaccountId
+            dev: credentials.uri
         };
-        this.pgConfig[subaccountId] = credentials.uri;
     }
 
     deploy() {
@@ -24,7 +23,9 @@ class TenantObjectDeployer {
         }, (migrator) => {
             logger.info('closing PostgreSQL connection for deploying content...');
             migrator.driver.close(function (err) {
-                logger.error('error in driver close', err);
+                if (err){
+                    logger.error('error in driver close', err);
+                }
                 logger.info('Done with object migrations onto PostgreSQL');
             });
         });

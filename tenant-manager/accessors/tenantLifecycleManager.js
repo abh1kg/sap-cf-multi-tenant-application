@@ -44,8 +44,11 @@ class TenantLifecycleManager {
         logger.info(`onboarding for tenant ${tenantId} started`);
         let tenantCredentials;
         return postgres.fetchTenantMetadata(tenantId)
-            .tap(result => tenantCredentials = result.credentials)
-            .then(result => this.deployTenantContent(tenantId, result.credentials))
+            .tap(result => {
+                tenantCredentials = result[0].credentials;
+                logger.info('credentials for tenant database', tenantCredentials);
+            })
+            .then(() => this.deployTenantContent(tenantId, tenantCredentials))
             .then(() => this.addTenantConfigInCache(tenantId, tenantCredentials))
             .then(() => this.cloudController.mapRoute(appHostname, cfDomain))
             .then(() => postgres.updateTenantMetadata(tenantId, {

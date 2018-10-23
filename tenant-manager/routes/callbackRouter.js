@@ -45,7 +45,13 @@ router.put('/v1.0/tenants/:tenantId', function (req, res) {
 			const tenantUrl = `https://${consumerSubdomain}-${UI_APP_ROUTE}`;
 			res.status(200).send(tenantUrl);
 		})
-		.finally(() => logger.info(`subscription processed successfully for ${tenantId}`));
+		.catch(err => {
+			logger.error(`error in onboarding tenant ${req.params.tenantId}`, err);
+			res.status(500).json({
+				'message': err.message
+			});
+		})
+		.finally(() => logger.info(`subscription processed for ${tenantId}`));
 });
 
 router.delete('/v1.0/tenants/:tenantId', function (req, res) {
