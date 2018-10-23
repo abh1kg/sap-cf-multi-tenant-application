@@ -129,6 +129,13 @@ cf push
     cf restage tenant-manager
     ```
 
+### Utility Features
+
+The repository provides two shell scripts inside [this directory](tenant-manager/admin), which are described in detail below:
+
+- `preonboarding_admin.sh`: This script is represented in the Component Architecture diagram above. This is expected to be run by the application provider on behalf of a new consumer before the subscription is finalized. The interactive script is responsible for creating a PostgreSQL instance, creating a service key for the instance and calling an admin API which maps the tenant information to the instance and credentials.
+
+- `migrate_all_consumer_dbs.sh`: This script is expected to be run by the application provider in case there arises a need to run database change management for all the PostgreSQL instances for all consumer accounts. This is typically a lifecycle operation, common during the development phase of a product where changes are frequent and difficult to predict.
 
 ### Using SAP Identity Authentication Service (formerly known as SAP Cloud Identity Service)
 
