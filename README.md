@@ -102,7 +102,7 @@ cf create-service xsuaa application <business_xsuaa_service_instance_name> -c se
   ```
   - Ensure that a `target` directory was generated as as result of the Maven build phase and it should contain a JAR file generated out of the build
   
-- Run the deployment by issuing the following command:
+- Run the deployment by issuing the following command from the root of this repository:
 ```
 cf push
 ```
