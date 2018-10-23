@@ -211,6 +211,12 @@ create_service_key_for_consumer_postgres() {
 	fi
 }
 
+get_service_instance_guid(){
+	DB_INSTANCE_NAME="$1"
+	guid=$(cf service "$DB_INSTANCE_NAME" --guid)
+	echo "$guid"
+}
+
 get_service_key_guid() {
 	DB_INSTANCE_NAME="$1"
 	guid=$(cf service-key "$DB_INSTANCE_NAME" "tenantKey" --guid)
@@ -297,6 +303,7 @@ print_delimiter
 
 print_delimiter "Creating/Updating PostgreSQL service instance...."
 create_or_update_postgres_service "$consumer_subaccount_name" "$consumer_service_plan" "postgresql"
+service_instance_id=$(get_service_instance_guid "$consumer_subaccount_name")
 print_delimiter
 
 print_delimiter "Creating Service Key..."
@@ -310,7 +317,7 @@ echo "Consumer PostgreSQL credentials: $generated_credentials"
 print_delimiter
 
 print_delimiter "Calling Tenant Administration API..."
-curl_data="{\"subaccountName\": \"$consumer_subaccount_name\", \"subaccountDomain\": \"$consumer_subaccount_domain\", \"credentials\": $generated_credentials}"
+curl_data="{\"serviceInstanceId\": \"$service_instance_id\", \"serviceKeyId\": \"$service_key_id\", \"subaccountName\": \"$consumer_subaccount_name\", \"subaccountDomain\": \"$consumer_subaccount_domain\", \"credentials\": $generated_credentials}"
 echo "$curl_data" > data.json
 curl_url="https://${tenant_manager_app_url}/admin/subaccounts/${consumer_subaccount_id}"
 echo "HTTP Request Content Type: application/json, HTTP Method: PUT, URL: $curl_url"
