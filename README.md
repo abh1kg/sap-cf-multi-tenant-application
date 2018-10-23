@@ -109,7 +109,7 @@ cf push
    
 - The SAP cloud platform provides a service in the marketplace called `saas-registry` and service plan `application`. This service is responsible for providing the application as a service to other subaccounts as a subscription. You need to create an instance of `saas-registry` with plan `application` passing along parameters for the multi-tenant app configurations. Follow the steps below for this:
     - Open the file `config.json` in the directory `multi-tenant-config`. Replace the placeholders in the file with values below:
-      - `<generated_xsappname_for_xsuaa_environment>`: Inspect the `xsuaa` service binding for the backend application using `cf env tenant-manager` and copy over the generated value for the field `xsappname`
+      - `<generated_xsappname_for_xsuaa_environment>`: Inspect the `xsuaa` service binding for the tenant-manager application using `cf env tenant-manager` and copy over the generated value for the field `xsappname`
       - `<route_for_tenant_manager_application_without_protocol>`: Replace with the route of the tenant manager application as mentioned above
     - Save the file
     - Create an instance of `saas-registry` (`application` plan) using the config file mentioned above:
