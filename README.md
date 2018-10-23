@@ -45,7 +45,7 @@ The following diagram illustrates the high-level component architecture for this
 - The _product service_ must deal with individual consumer PostgreSQL instances at runtime. This necessitates the use of _database connection pooling_ per tenant database. So, the product service maintains a set of connection pools per application instance for each tenant database server
 - The _product service_ uses the JSON web token passed along to its REST API handlers from the approuter and parses the token to fetch the subaccount ID (aka tenant ID). This is the discriminator used for identifying the target PostgreSQL instance at runtime and its corresponding connection pool
 
-#### Deploying the application onto SAP Cloud Platform Cloud Foundry
+#### Deploying the applications onto SAP Cloud Platform Cloud Foundry
 
 - Login and target the Cloud Foundry API endpoint and the correct organization and space. Note that the user must have Space Developer privileges in the targeted Cloud Foundry space. For example:
 
@@ -55,102 +55,76 @@ cf login -u <email_address> -p <password>
 cf target -o <org_name> -s <space_name>
 ```
 
-- Create a user-provided service instance with parameters pointing to the schema, restricted user and password created in the steps above. We will use this user-provided instance to connect to the HANA database for onboarding and offboarding JWT provider per XSUAA tenant subscription request
-  - As a prerequisite, this assumes that a HANA database is already provisioned in the space._
-  - You need to replace the following placeholders with appropriate values in the file `trust-setup-parameters.json` in the root of this repository:
-    - `<host_for_hana_dbaas_instance>`: this should be replaced with the fully qualified host name of the HANA database. This can be retrieved easily by creating a service key of the HANA instance and inspecting the `host` field
-    - `<port_for_hana_dbaas_instance>`: this should be replaced with the database listener port of the HANA instance. This can be retrieved easily by inspecting the `port` field of a service key created for the HANA instance
-    - `<password_for_restricted_user>`: this should be replaced with the password for the restricted user chosen above
-    - `<certificate_for_hana_database_for_secure_logon>`: this should be replaced with the raw certificate string used for secure database logon for the instance. This can be retrieved easily by inspecting the `certificate` field of a service key created for the HANA instance.
-    - `<restricted_user_name>`: this should be replaced with the username chosen for the restricted HANA user above.
-  - Run the command below with a suitable name for the user-provided service instance:
+- Create a [PostgreSQL service instance](https://cloudplatform.sap.com/capabilities/product-info.PostgreSQL-on-SAP-Cloud-Platform.d03d9706-13e7-4c0f-b9ca-53b5abe88afc.html) of suitable size for the tracking database. Run the command below with a suitable name for the service instance and service plan:
 
-  ```
-  cf create-user-provided-service <user_provided_service_instance_for_granting_service> -p trust-setup-parameters.json
-  ```
+```
+cf create-service postgresql <postgres_service_plan> <master_postgres_service_instance_name>
+```
 
-- Create an instance of HDI (`hdi-shared` service plan) for hosting master information for the consumer tenants. Note this is an asynchronous operation. 
-  - As a prerequisite, this assumes that a HANA Database is already provisioned in the space. You need to replace the service instance ID of the HANA database instance (fetch the ID via `cf service <hana_instance_name> --guid`) in the file `database-parameters.json` in the root of this repository. Run the command below with a suitable name for the HDI service instance:
+_Note_: Provisioning of a PostgreSQL instance is asynchronous in nature- please follow the instructions provided in the output for understanding the workflow.
+
+- Create a [Redis service instance](https://cloudplatform.sap.com/capabilities/product-info.Redis-on-SAP-Cloud-Platform.2234296a-cef5-4a4d-8267-cdd046a91be5.html) of suitable size for the configuration cache service. Run the command below with a suitable name for the service instance and service plan:
+
+```
+cf create-service redis <redis_service_plan> <service_instance_name_for_redis_instance>
+```
+
+- We will use `xsuaa` as the business user authentication and authorization service for the multi-tenant application. We will create two service instances of `xsuaa`:
+  - One service instance for defining the role required to authorize the `SaaS-Provisioning` service to call the `tenant-manager` application on onboarding and offboarding requests. The security profile for this instance is defined in this [file](security/xs-security-saas-provisioning.json). Note that the value for the parameter `tenant-mode` is `shared` and the profile descriptor grants authority to the `saas-provisioning` application to call the associated application.
+  - Another for the individual microservice-approuter bundles, which will contain the role, template and attribute definitions for the service bundles. This `xsuaa` instance can be bound to all approuter-service bundles as per need. The security profile for this instance is defined in this [file](security/xs-security-services.json). Note the value for the parameter `tenant-mode` is `shared` and the profile descriptor defines a set of role templates, scopes and attributes.
   
-  ```
-  cf create-service hana hdi-shared <hdi_service_instance_name_for_tenant_master> -c database-parameters.json
-  ```
+  Run the following commands to create the two `xsuaa` instances. Replace the placeholders with appropriate values before running the commands:
+  
+```
+cf create-service xsuaa application <xsuaa_service_instance_name> -c security/xs-security-saas-provisioning.json
+```
+```
+cf create-service xsuaa application <business_xsuaa_service_instance_name> -c security/xs-security-services.json
+```
 
-- Deploy the HDI Deployer application in order to deploy the "tenant master" database table. This table is going to be used for hosting all master tenant information. 
+- Open the `manifest.yml` deployment descriptor in the root of this repository. Replace the following placeholders with appropriate values as described below:
+  - `<master_postgres_service_instance_name>`: this should be replaced with the name chosen for the tracking PostgreSQL service instance above
+  - `<service_instance_name_for_redis_instance>`: this should be replaced with the name chosen for the Redis service instance above
+  - `<xsuaa_service_instance_name>`: this should be replaced with the name chosen for the XS UAA service instance for authorizing SaaS provisioning callbacks
+  - `<business_xsuaa_service_instance_name>`: this should be replaced with the name chosen for the XS UAA service instance for business service authorizations
+  - `<route_for_ui_application_without_protocol>`: this should be replaced with the fully qualified URL for the approuter application _without the protocol as a prefix_ (e.g. `my-beautiful-approuter-ui.cfapps.eu10.hana.ondemand.com`)
+  - `<generated_username_for_devops_onboarding>`: this should be replaced with a suitably random string. This is used as the basic authentication username for authorizing pre-onboarding setup. You can choose to create a random string using a utility command like `cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+  - `<generated_password_for_devops_onboarding>`: this should be replaced with a suitably random string. This is used as the basic authentication password for authorizing pre-onboarding setup. You can choose to create a random string using a utility command like `cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+  - `<route_for_tenant_manager_application_without_protocol>`: this should be replaced with the fully qualified URL for the tenant manager application _without the protocol as a prefix_ (e.g. `my-tenant-manager.cfapps.eu10.hana.ondemand.com`)
+  - `<route_for_backend_application_without_protocol>`: this should be replaced with the fully qualified URL for the product backend application _without the protocol as a prefix_ (e.g. `my-beautiful-backend.cfapps.eu10.hana.ondemand.com`)
 
-  - Open the `manifest.yml` deployment descriptor in the directory `industry-management-core-db`
-  - Replace the placeholder `<hdi_service_instance_name_for_tenant_master>` with the value chosen in the step above and save the manifest.
-  - Run the commands below to deploy the hdi deployer application:
-
+- Build the Master PostgreSQL deployer. The module is called `database` and deploys some tracking objects into the master PostgreSQL instance's "public" schema.
+  - Running the build for this module requires you to have _JDK 1.8_ and _Maven_ set up locally since the module uses the [FlywayDB library](https://flywaydb.org/) for source version control and database migrations
   ```
-  cd industry-management-core-db
-  cf push
+  cd database
+  mvn clean package
   cd ..
   ```
-
-- We will use `xsuaa` as the business user authentication and authorization service for the multi-tenant application. Create the service instance of `xsuaa` (`application` plan) with the security profile defined in the JSON descriptor. The JSON descriptor is present in the root of this repository in a file called `xs-security.json`. Take care in replacing the placeholder with an appropriate value:
-
+  - Ensure that a `target` directory was generated as as result of the Maven build phase and it should contain a JAR file generated out of the build
+  
+- Run the deployment by issuing the following command:
 ```
-cf create-service xsuaa application <xsuaa_service_instance_name> -c xs-security.json
+cf push
 ```
-
-- The application service uses a backend application protected by OAuth authorizations and additional role checks. Follow the steps below to deploy the backend application:
-  - Go into the directory `industry-management-backend` which contains the source code for the backend application
-  - Open the `manifest.yml` deployment descriptor
-  - Replace the following placeholders with appropriate values as described below:
-    - `<user_provided_service_instance_for_granting_service>`: this should be replaced with the value for the user provided service instance created above
-    - `<name_for_ui_approuter_application>`: this should be replaced with the name of the Cloud Foundry approuter application which serves the UI resources and responds to tenant-specific route requests. In this example, the name is provided as `industrymanagementui` in the `manifest.yml` deployment descriptor within the application directory `industry-management-ui`
-    - `<hdi_service_instance_name_for_tenant_master>`: this should be replaced with the value for the HDI service instance used above
-    - `<service_instance_id_for_hana_dbaas>`: this should be replaced with the instance ID of the HANA DBaaS instance (also used above in the `database-parameters.json` file)
-    - `<password_for_space_developer_user>`: this should be replaced with the password of a user in the space with Space Developer permissions
-    - `<email_for_space_developer_user>`: this should be replaced with the email address of the user in the space with Space Developer permissions
-    - `<xsuaa_service_instance_name>`: this should be replaced with the name of the XSUAA instance created above
-    - `<route_for_ui_application_without_protocol>`: this should be replaced with the route of the UI application (without the HTTPs protocol in the prefix). The format should be `<app_name>.<domain>` e.g. `mybeautifului.cfapps.eu10.hana.ondemand.com`
-    - `<route_for_backend_application_without_protocol>`: this should be replaced with the route of the backend application that you want to use (without the HTTPs protocol in the prefix) e.g. e.g. `mybeautifulbackend.cfapps.eu10.hana.ondemand.com`
-   - Save the manifest file
-   - Run the deployment using:
-   ```
-   cf push
-   ```
-- The application service provides a user interface, protected by the same business user authorizations and backend by the `approuter` for serving static resources and responsible for proxying HTTP requests securely to the backend. Follow the steps below to deploy the backend application:
-  - Go into the directory `industry-management-ui` which contains the source code for the backend application
-  - Open the `manifest.yml` deployment descriptor
-  - Replace the following placeholders with appropriate values as described below:
-    - `<xsuaa_service_instance_name>`: this should be replaced with the name of the XSUAA instance created above
-    - `<route_for_ui_application_without_protocol>`: this should be replaced with the route of the UI application (without the HTTPs protocol in the prefix). The format should be `<app_name>.<domain>` e.g. `mybeautifului.cfapps.eu10.hana.ondemand.com`
-    - `<route_for_backend_application_without_protocol>`: this should be replaced with the route of the backend application that you want to use (without the HTTPs protocol in the prefix) e.g. e.g. `mybeautifulbackend.cfapps.eu10.hana.ondemand.com`
-   - Run the deployment using:
-   ```
-   cf push
-   ```
    
- - The SAP cloud platform provides a service in the marketplace called `saas-registry` and service plan `application`. This service is responsible for providing the application service to other subaccounts in the list of subscriptions. You need to create an instance of `saas-registry` with plan `application` passing along parameters for the multi-tenant app configurations. Follow the steps below for this:
+- The SAP cloud platform provides a service in the marketplace called `saas-registry` and service plan `application`. This service is responsible for providing the application as a service to other subaccounts as a subscription. You need to create an instance of `saas-registry` with plan `application` passing along parameters for the multi-tenant app configurations. Follow the steps below for this:
     - Open the file `config.json` in the directory `multi-tenant-config`. Replace the placeholders in the file with values below:
-      - `<generated_xsappname_for_xsuaa_environment>`: Inspect the `xsuaa` service binding for the backend application using `cf env industrymanagementbackend` and copy over the generated value for the field `xsappname`
-      - `<route_for_backend_application_without_protocol>`: Replace with the route of the backend application as mentioned above
+      - `<generated_xsappname_for_xsuaa_environment>`: Inspect the `xsuaa` service binding for the backend application using `cf env tenant-manager` and copy over the generated value for the field `xsappname`
+      - `<route_for_tenant_manager_application_without_protocol>`: Replace with the route of the tenant manager application as mentioned above
     - Save the file
     - Create an instance of `saas-registry` (`application` plan) using the config file mentioned above:
     ```
     cf create-service saas-registry application saas-provisioning-service -c multi-tenant-config/config.json
     ```
-    - Bind the instance to the backend application:
+    - Bind the instance to the `tenant-manager` application:
     ```
-    cf bind-service industrymanagementbackend saas-provisioning-service
+    cf bind-service tenant-manager saas-provisioning-service
     ```
     - Restage the backend application
     ```
-    cf restage industrymanagementbackend
+    cf restage tenant-manager
     ```
 
-### Subscription Process
-
-When the provider application receives a subscription request, the provider performs the following steps:
-
-- Provisions an HDI container connected to the DBaaS instance corresponding to the consumer subaccount
-- Creates a Cloud Foundry Service Key for the HDI container
-- Deploys the database artifacts into the corresponding HDI container for the tenant using the credentials of the service key
-- Creates a mapping in the DBaaS instance which links the consumer subaccount, the HDI container service instance ID and the generated service key ID
-- Establishes trust between the consumer subaccount's identity realm and the HANA database
 
 ### Using SAP Identity Authentication Service (formerly known as SAP Cloud Identity Service)
 
