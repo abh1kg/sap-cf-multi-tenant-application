@@ -9,6 +9,8 @@ const _ = require('lodash');
 const passport = require('passport');
 const Strategy = require('passport-http').BasicStrategy;
 
+const TenantDbDeployer = require('../accessors').TenantDbDeployer;
+
 // Protect the backend using xsuaa authorizations
 const basicAuthAdminUser = process.env.BASIC_AUTH_ADMIN_USER || 'admin';
 const basicAuthAdminPassword = process.env.BASIC_AUTH_ADMIN_PASSWORD || 'admin';
@@ -30,6 +32,32 @@ passport.use(new Strategy(
 router.use(passport.authenticate('basic', {
     session: false
 }));
+
+router.put('/db_migrations', function (req, res) {
+    logger.info('Request received to trigger database migrations for all subaccounts');
+    return postgres.fetchTenants()
+        .then(result => _.map(result, function (r) {
+            return {
+                subAccountId: r.consumer_subaccount_id,
+                credentials: r.credentials
+            };
+        }))
+        .then(subAccounts => _.map(subAccounts, subAccount => Promise.try(() => new TenantDbDeployer(subAccount.subAccountId, subAccount.credentials).deploy())))
+        .then(migrationPromises => Promise.all(migrationPromises))
+        .then(() => {
+            logger.info('database change management for all consumer subaccounts completed successfully');
+            res.status(200).json({
+                message: 'success'
+            });
+        })
+        .catch(err => {
+            logger.error('database change management for few consumer subaccounts failed', err);
+            res.status(500).json({
+                message: 'failed',
+                detailedError: err.message
+            });
+        });
+});
 
 router.get('/:subaccountId', function (req, res) {
     const subaccountId = req.params.subaccountId;

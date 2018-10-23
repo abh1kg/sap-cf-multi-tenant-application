@@ -67,12 +67,12 @@ class TenantLifecycleManager {
     offboardTenant(tenantId, appHostname, cfDomain) {
         logger.info(`offboarding tenant ${tenantId}`);
         let instanceId;
-        postgres.fetchTenantMetadata(tenantId)
+        return postgres.fetchTenantMetadata(tenantId)
             .tap(result => instanceId = result[0].service_instance_id)
             .then(() => this.cloudController.purgeRoute(appHostname, cfDomain))
             .then(() => this.deleteTenantConfigFromCache(tenantId))
-            .then(() => this.cloudController.deleteServiceInstance(instanceId))
             .then(() => this.deleteTenantMasterEntry(tenantId))
+            .then(() => this.cloudController.deleteServiceInstance(instanceId))
             .then(() => logger.info(`Offboarding completed for tenant ${tenantId}`));
     }
 }

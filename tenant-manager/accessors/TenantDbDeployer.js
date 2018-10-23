@@ -15,6 +15,7 @@ class TenantObjectDeployer {
     }
 
     deploy() {
+        logger.info('running database change management for ', this.subaccountId);
         const postgresMigrator = DbMigrate.getInstance(true, {
             'throwUncatched': true,
             'cwd': path.join(__dirname, '..'),

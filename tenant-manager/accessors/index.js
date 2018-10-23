@@ -11,3 +11,4 @@ const tenantLifecycleManager = new TenantLifecycleManager(cloudController);
 exports.cfUaa = uaa;
 exports.cloudController = cloudController;
 exports.tenantLifecycleManager = tenantLifecycleManager;
+exports.TenantDbDeployer = require('./TenantDbDeployer');
