@@ -7,7 +7,7 @@ The sample application uses PostgreSQL and Redis as backing services.
 
 As mentioned [here](https://blogs.sap.com/2018/09/26/multitenancy-architecture-on-sap-cloud-platform-cloud-foundry-environment/):
 
-Multitenancy refers to a software architecture, in which tenants **share the same technical resources**, but keep the **data separated** and **identity and access management for each tenant isolated**.
+"_Multitenancy refers to a software architecture, in which tenants **share the same technical resources**, but keep the **data separated** and **identity and access management for each tenant isolated**_."
 
 A multi-tenant business application provides a suite of functional services to a group of customers. The developer and deployer of the application service (e.g. a company with a Global Account on SAP Cloud Platform) is often referred to as the _provider_ while the customers of the service are referred to as _consumers_.
 
@@ -21,11 +21,29 @@ A multi-tenant business application provides a suite of functional services to a
 
 We will use the Cloud Foundry CLI for deploying the applications onto the Cloud Foundry landscape. The process can be simplified further into a unified deployment experience using the concept of Multi-Target Archives (MTAs). This is left to the reader as an exercise in order to keep the concerns of deployment separate from the intention of developing a multi-tenant application.
 
-#### Component Architecture
+### Component Architecture
 
 The following diagram illustrates the high-level component architecture for this application:
 
+![picture](component_architecture.png)
 
+#### Subscription Workflow
+
+- Each _consumer tenant_ represents a Subaccount in the _application provider's_ SAP Cloud Platform Global Account. Each subaccount is expected to have its own security configurations and its own user-base (identity zone)
+- SAP Cloud Platform provides the _SaaS provisioning service_ which can be used for automating the tenant subscription (aka _tenant onboarding_) workflows. 
+- In this exercise, the mode of data isolation is to map a consumer subaccount to an isolated instance of _PostgreSQL_ running within the boundaries of the Cloud Foundry space of the application provider
+- Since PostgreSQL instance provisioning is asynchronous and time-consuming in nature, the idea is to split the tenant onboarding workflow into a two-step process:
+  - The repository provides an [interactive shell script](tenant-manager/admin/create_consumer.sh), which needs to be run by an application administrator of the Cloud Foundry space (typically with Space Developer access privileges assigned). The script is responsible for creating the PostgreSQL instance, creating a service key for the instance and calling an administration API secured via basic authentication credentials, which creates a mapping between the consumer subaccount and the corresponding PostgreSQL instance's credentials.
+  - Once the shell script has been executed, the application provider's account administrator is expected to navigate to the consumer subaccount's _Subscriptions_ page in the _Cloud Cockpit_ and press on the _Subscribe_ button. This initiates the _SaaS provisioning_ workflow whereby the SaaS provisioning service invokes the tenant onboarding callback API. The callback API is expected to complete the onboarding workflow by performing _database schema migration_ for the consumer's PostgreSQL database, store the credentials for the subaccount into _Redis_ for fast dictionary-based lookup at runtime and return the consumer-specific URL for the application
+
+#### Runtime Workflow
+
+- To reiterate, each _consumer tenant_ represents a Subaccount in the _application provider's_ SAP Cloud Platform Global Account. Each subaccount is expected to have its own security configurations and its own user-base (identity zone)
+- The _product application UI_ component is based on the multi-tenant aware _application router_ library. The approuter is responsible for participating in the OAuth _authorization code_ workflow for browser-based access (using the XS UAA), providing reverse proxying capabilities to backend destinations over secure HTTP and serving static resources like Javascript and CSS stylesheets for UI rendering
+- The _product service_ component represents an application microservice with a fixed set of functionalities. In this case, it is responsible for providing a catalog of products for each consumer tenant and allowing users to add specific products. Important to note, the product service is protected using OAuth authorizations leveraging XS UAA and performs security validations such as token parsing, scope checks etc.
+- As described above, one of the most important facets of multi-tenancy is data isolation across tenants. While technical compute resources are shared, consumer data must be isolated to a degree that is tolerable as per requirements. In this exercise, the application provider maps each consumer subaccount to a _separate instance of PostgreSQL_ on Cloud Foundry. This can be thought of as the highest level of data isolation per consumer because the PostgreSQL instances are network-secure, completely separated from each other and maintain their own isolated lifecycles. Furthermore, backup and recovery can be performed on individual consumer database instances as needed.
+- The _product service_ must deal with individual consumer PostgreSQL instances at runtime. This necessitates the use of _database connection pooling_ per tenant database. So, the product service maintains a set of connection pools per application instance for each tenant database server
+- The _product service_ uses the JSON web token passed along to its REST API handlers from the approuter and parses the token to fetch the subaccount ID (aka tenant ID). This is the discriminator used for identifying the target PostgreSQL instance at runtime and its corresponding connection pool
 
 #### Deploying the application onto SAP Cloud Platform Cloud Foundry
 
@@ -38,7 +56,7 @@ cf target -o <org_name> -s <space_name>
 ```
 
 - Create a user-provided service instance with parameters pointing to the schema, restricted user and password created in the steps above. We will use this user-provided instance to connect to the HANA database for onboarding and offboarding JWT provider per XSUAA tenant subscription request
-  - As a prerequisite, this assumes that a HANA database is already provisioned in the space.
+  - As a prerequisite, this assumes that a HANA database is already provisioned in the space._
   - You need to replace the following placeholders with appropriate values in the file `trust-setup-parameters.json` in the root of this repository:
     - `<host_for_hana_dbaas_instance>`: this should be replaced with the fully qualified host name of the HANA database. This can be retrieved easily by creating a service key of the HANA instance and inspecting the `host` field
     - `<port_for_hana_dbaas_instance>`: this should be replaced with the database listener port of the HANA instance. This can be retrieved easily by inspecting the `port` field of a service key created for the HANA instance
