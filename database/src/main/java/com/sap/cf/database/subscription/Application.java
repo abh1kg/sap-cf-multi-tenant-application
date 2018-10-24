@@ -24,6 +24,7 @@ public class Application {
 			public void migrate(Flyway flyway) {
 				try {
 					LOGGER.info("Starting Flyway Migration of subscription master database:");
+					flyway.baseline();
 					flyway.repair();
 					flyway.migrate();
 					flyway.info();
