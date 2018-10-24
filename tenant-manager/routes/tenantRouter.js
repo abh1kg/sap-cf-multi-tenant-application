@@ -6,6 +6,7 @@ const postgres = require('../dbConnector').postgres;
 const logger = require('../logger');
 
 const _ = require('lodash');
+const Promise = require('bluebird');
 const passport = require('passport');
 const Strategy = require('passport-http').BasicStrategy;
 
@@ -92,7 +93,8 @@ router.put('/:subaccountId', function (req, res) {
         })
         .catch(err => {
             res.status(500).json({
-                message: 'request failed'
+                message: 'request failed',
+                detailedMessage: err.message
             });
         });
 });
