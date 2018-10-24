@@ -28,13 +28,13 @@ check_if_cf_cli_exists() {
 }
 
 check_if_curl_exists() {
-	if ! command -v cf; then
+	if ! command -v curl; then
 		fail "curl not found- follow the instructions at https://linoxide.com/linux-how-to/install-curl-php-linux/ for installation on Linux and https://curl.haxx.se/download.html for downloads on Windows"
 	fi
 }
 
 check_if_jq_exists() {
-	if ! command -v cf; then
+	if ! command -v jq; then
 		fail "jq executable not found- please install the jq cli to proceed- follow instructions at https://stedolan.github.io/jq/download/ for installation"
 	fi
 }
